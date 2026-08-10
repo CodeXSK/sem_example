@@ -1,6 +1,0 @@
-// SynthEdit Windows XML resource.
-// This file is ignored on macOS by sem_example/plugin_helper.cmake.
-#include "resource.h"
-#include <windows.h>
-
-IDR_GMPXML1 GMPXML "PhaseRotatorFIR.xml"
