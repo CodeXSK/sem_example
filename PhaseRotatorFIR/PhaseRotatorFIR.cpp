@@ -15,7 +15,7 @@ namespace
 class PhaseRotatorFIR final : public MpBase2
 {
     static constexpr int kTapCount = 129;
-    static constexpr int kGroupDelaySamples = (kTapCount - 1) / 2; // 64
+    static constexpr int kGroupDelaySamples = (kTapCount - 1) / 2;
 
     AudioInPin  pinSignalIn;
     FloatInPin  pinPhase;
@@ -46,7 +46,7 @@ public:
         currentPhase_ = std::clamp(
             static_cast<float>(pinPhase), 0.0f, 1.0f);
 
-        // Inform SynthEdit that this module has 64 samples of fixed latency.
+        // 129-tap linear-phase Hilbert FIR -> 64 samples group delay.
         host.SetLatency(kGroupDelaySamples);
 
         return result;
@@ -69,44 +69,39 @@ public:
             const float x = *signalIn++;
             delayLine_[writeIndex_] = x;
 
-            // FIR Hilbert branch.
             float quadrature = 0.0f;
             int readIndex = writeIndex_;
 
             for (int tap = 0; tap < kTapCount; ++tap)
             {
-                quadrature += hilbertCoefficients_[tap] * delayLine_[readIndex];
+                quadrature +=
+                    hilbertCoefficients_[tap] * delayLine_[readIndex];
 
                 --readIndex;
                 if (readIndex < 0)
                     readIndex = kTapCount - 1;
             }
 
-            // Match the direct branch to the Hilbert transform's
-            // linear-phase group delay.
-            int directIndex = writeIndex_ - kGroupDelaySamples;
+            int directIndex =
+                writeIndex_ - kGroupDelaySamples;
+
             if (directIndex < 0)
                 directIndex += kTapCount;
 
-            const float delayedInput = delayLine_[directIndex];
+            const float delayedInput =
+                delayLine_[directIndex];
 
             currentPhase_ += phaseStep;
-            const float theta = currentPhase_ * kPi;
 
-            const float c = std::cos(theta);
-            const float q = std::sin(theta);
+            const float theta =
+                currentPhase_ * kPi;
 
-            // Hilbert(x) is approximately -90 degrees for positive
-            // frequencies. Subtracting it produces the positive rotation:
-            //
-            // 0.00 ->   0 degrees
-            // 0.25 ->  45 degrees
-            // 0.50 ->  90 degrees
-            // 0.75 -> 135 degrees
-            // 1.00 -> 180 degrees
-            *signalOut++ = delayedInput * c - quadrature * q;
+            *signalOut++ =
+                delayedInput * std::cos(theta)
+                - quadrature * std::sin(theta);
 
             ++writeIndex_;
+
             if (writeIndex_ >= kTapCount)
                 writeIndex_ = 0;
         }
@@ -125,33 +120,35 @@ private:
     {
         constexpr int centre = kGroupDelaySamples;
 
-        // Windowed ideal odd-symmetric Hilbert transformer.
-        // h[m] = 2/(pi*m) for odd m; 0 for even m and m=0.
-        // A Blackman window reduces truncation ripple.
         for (int n = 0; n < kTapCount; ++n)
         {
             const int m = n - centre;
             float h = 0.0f;
 
             if (m != 0 && (std::abs(m) & 1))
-                h = 2.0f / (kPi * static_cast<float>(m));
+            {
+                h =
+                    2.0f /
+                    (kPi * static_cast<float>(m));
+            }
 
-            const float windowAngle =
+            const float angle =
                 2.0f * kPi * static_cast<float>(n)
                 / static_cast<float>(kTapCount - 1);
 
             const float blackman =
                 0.42f
-                - 0.50f * std::cos(windowAngle)
-                + 0.08f * std::cos(2.0f * windowAngle);
+                - 0.50f * std::cos(angle)
+                + 0.08f * std::cos(2.0f * angle);
 
-            hilbertCoefficients_[n] = h * blackman;
+            hilbertCoefficients_[n] =
+                h * blackman;
         }
     }
 };
 
-namespace
-{
-    auto r = Register<PhaseRotatorFIR>::withId(
-        L"Pandocrator Phase Rotator FIR");
-}
+// Deliberately use the SDK's direct factory-registration macro.
+REGISTER_PLUGIN2(
+    PhaseRotatorFIR,
+    L"Pandocrator Phase Rotator FIR"
+);

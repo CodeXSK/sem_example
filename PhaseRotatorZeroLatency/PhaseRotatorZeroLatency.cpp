@@ -45,9 +45,6 @@ public:
         previousInput_ = 0.0f;
         previousOutput_ = 0.0f;
 
-        // This module has no fixed delay buffer and reports zero latency.
-        host.SetLatency(0);
-
         return result;
     }
 
@@ -98,33 +95,28 @@ private:
     {
         normalizedPhase = std::clamp(normalizedPhase, 0.0f, 1.0f);
 
-        // The requested rotation is defined at 1 kHz:
-        // 0.00 -> approximately   0 degrees
-        // 0.50 -> approximately -45 degrees
-        // 1.00 -> approximately -90 degrees
-        //
-        // A causal zero-fixed-latency all-pass cannot maintain the same
-        // phase angle over the whole spectrum. The rotation is frequency
-        // dependent, and is a phase lag.
         const float desiredPhase = normalizedPhase * kHalfPi;
-        const float omega = 2.0f * kPi * kReferenceFrequencyHz / sampleRate_;
+        const float omega =
+            2.0f * kPi * kReferenceFrequencyHz / sampleRate_;
 
         const float tanHalfOmega = std::tan(0.5f * omega);
+
         if (std::abs(tanHalfOmega) < 1.0e-12f)
             return 0.9995f;
 
-        const float ratio = std::tan(0.5f * desiredPhase) / tanHalfOmega;
-        const float a = (1.0f - ratio) / (1.0f + ratio);
+        const float ratio =
+            std::tan(0.5f * desiredPhase) / tanHalfOmega;
 
-        // Keep the pole strictly inside the unit circle.
-        // At Phase=0 the mathematical value is +1; 0.9995 is effectively
-        // dry while avoiding a marginal pole/cancellation implementation.
+        const float a =
+            (1.0f - ratio) / (1.0f + ratio);
+
         return std::clamp(a, -0.9995f, 0.9995f);
     }
 };
 
-namespace
-{
-    auto r = Register<PhaseRotatorZeroLatency>::withId(
-        L"Pandocrator Phase Rotator Zero Latency");
-}
+// Deliberately use the SDK's direct factory-registration macro.
+// This avoids relying on the newer templated Register<> helper.
+REGISTER_PLUGIN2(
+    PhaseRotatorZeroLatency,
+    L"Pandocrator Phase Rotator Zero Latency"
+);

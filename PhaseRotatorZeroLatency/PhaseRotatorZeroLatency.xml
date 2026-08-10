@@ -1,12 +1,11 @@
 <?xml version="1.0" ?>
 <PluginList>
-    <Plugin
-        id="Pandocrator Phase Rotator Zero Latency"
-        name="Phase Rotator 0-90 ZL"
-        category="Pandocrator DSP">
+    <Plugin id="Pandocrator Phase Rotator Zero Latency"
+            name="Phase Rotator 0-90 ZL"
+            category="Pandocrator DSP">
         <Audio>
             <Pin name="Signal In" datatype="float" rate="audio" />
-            <Pin name="Phase 0-1" datatype="float" default="0" />
+            <Pin name="Phase" datatype="float" default="0" />
             <Pin name="Signal Out" datatype="float" rate="audio" direction="out" />
         </Audio>
     </Plugin>
