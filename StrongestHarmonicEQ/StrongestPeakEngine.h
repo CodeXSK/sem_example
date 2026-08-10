@@ -46,7 +46,7 @@ public:
                        float maxFrequency,
                        float trackingMs)
     {
-        boostDb_ = std::clamp(boostDb, 0.0f, 24.0f);
+        boostDb_ = std::clamp(boostDb, -24.0f, 24.0f);
         q_ = std::clamp(q, 0.30f, 12.0f);
 
         minFrequency_ = std::clamp(minFrequency, 20.0f, 18000.0f);
@@ -108,7 +108,7 @@ private:
 
             frequency = std::clamp(frequency, 10.0f, maxFrequency);
             q = (std::max)(0.1f, q);
-            gainDb = std::clamp(gainDb, 0.0f, 24.0f);
+            gainDb = std::clamp(gainDb, -24.0f, 24.0f);
 
             // RBJ Audio EQ Cookbook peaking EQ.
             const float A = std::pow(10.0f, gainDb / 40.0f);
