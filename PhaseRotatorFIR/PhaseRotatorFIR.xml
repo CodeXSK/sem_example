@@ -1,33 +1,13 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" ?>
 <PluginList>
-  <Plugin
-      id="Pandocrator Phase Rotator FIR"
-      name="Phase Rotator 0-180 FIR"
-      category="Pandocrator DSP">
-
-    <Audio>
-      <Pin
-          id="0"
-          name="Input"
-          direction="in"
-          datatype="float"
-          rate="audio" />
-
-      <Pin
-          id="1"
-          name="Phase"
-          direction="in"
-          datatype="float"
-          default="0"
-          metadata="range 0,1" />
-
-      <Pin
-          id="2"
-          name="Output"
-          direction="out"
-          datatype="float"
-          rate="audio" />
-    </Audio>
-
-  </Plugin>
+    <Plugin
+        id="Pandocrator Phase Rotator FIR"
+        name="Phase Rotator 0-180 FIR"
+        category="Pandocrator DSP">
+        <Audio>
+            <Pin name="Signal In" datatype="float" rate="audio" />
+            <Pin name="Phase 0-1" datatype="float" default="0" />
+            <Pin name="Signal Out" datatype="float" rate="audio" direction="out" />
+        </Audio>
+    </Plugin>
 </PluginList>

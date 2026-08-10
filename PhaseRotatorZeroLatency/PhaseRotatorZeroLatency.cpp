@@ -1,194 +1,130 @@
-#include "PhaseRotatorZeroLatency.h"
+#include "mp_sdk_audio.h"
 
 #include <algorithm>
 #include <cmath>
 
-REGISTER_PLUGIN(
-    PhaseRotatorZeroLatency,
-    L"Pandocrator Phase Rotator Zero Latency"
-);
+using namespace gmpi;
 
 namespace
 {
-    constexpr float pi =
-        3.14159265358979323846f;
-
-    constexpr float halfPi =
-        1.57079632679489661923f;
+    constexpr float kPi = 3.14159265358979323846f;
+    constexpr float kHalfPi = 1.57079632679489661923f;
+    constexpr float kReferenceFrequencyHz = 1000.0f;
 }
 
-PhaseRotatorZeroLatency::PhaseRotatorZeroLatency(
-    IMpUnknown* host
-)
-    : MpBase(host)
+class PhaseRotatorZeroLatency final : public MpBase2
 {
-    initializePin(0, pinInput);
-    initializePin(1, pinPhase);
-    initializePin(2, pinOutput);
-}
+    AudioInPin  pinSignalIn;
+    FloatInPin  pinPhase;
+    AudioOutPin pinSignalOut;
 
-int32_t PhaseRotatorZeroLatency::open()
-{
-    MpBase::open();
+    float sampleRate_ = 44100.0f;
+    float currentCoefficient_ = 0.9995f;
+    float previousInput_ = 0.0f;
+    float previousOutput_ = 0.0f;
 
-    sampleRate =
-        static_cast<double>(getSampleRate());
-
-    if(sampleRate < 8000.0)
-        sampleRate = 44100.0;
-
-    currentPhase =
-        std::clamp(
-            static_cast<float>(pinPhase),
-            0.0f,
-            1.0f
-        );
-
-    previousInput  = 0.0f;
-    previousOutput = 0.0f;
-
-    SET_PROCESS(
-        &PhaseRotatorZeroLatency::subProcess
-    );
-
-    return gmpi::MP_OK;
-}
-
-float PhaseRotatorZeroLatency::coefficientForPhase(
-    float normalizedPhase
-) const noexcept
-{
-    normalizedPhase =
-        std::clamp(
-            normalizedPhase,
-            0.0f,
-            1.0f
-        );
-
-    /*
-        First-order all-pass:
-
-            H(z) = (a + z^-1) / (1 + a z^-1)
-
-        Difference equation:
-
-            y[n] = a*x[n] + x[n-1] - a*y[n-1]
-
-        |H| = 1 at all frequencies.
-
-        The "Phase" control specifies the magnitude of the
-        phase rotation AT 1 kHz:
-
-            0.0 ->   0 degrees
-            0.5 ->  45 degrees
-            1.0 ->  90 degrees
-
-        A causal first-order all-pass produces phase lag.
-        Therefore the actual sign at 1 kHz is 0 ... -90 degrees.
-
-        At other frequencies the phase angle is necessarily
-        different. This is the price of doing the job sample-by-sample
-        without the fixed 64-sample Hilbert delay used by the FIR module.
-    */
-
-    if(normalizedPhase <= 0.000001f)
-        return 0.0f; // not used while true-bypassed.
-
-    const float desiredPhase =
-        normalizedPhase * halfPi;
-
-    const float omega =
-        2.0f
-        * pi
-        * referenceFrequencyHz
-        / static_cast<float>(sampleRate);
-
-    const float tanHalfOmega =
-        std::tan(0.5f * omega);
-
-    if(std::abs(tanHalfOmega) < 1.0e-12f)
-        return 0.0f;
-
-    const float ratio =
-        std::tan(0.5f * desiredPhase)
-        / tanHalfOmega;
-
-    float a =
-        (1.0f - ratio)
-        / (1.0f + ratio);
-
-    // Keep the pole comfortably inside the unit circle.
-    a = std::clamp(
-        a,
-        -0.9995f,
-         0.9995f
-    );
-
-    return a;
-}
-
-void PhaseRotatorZeroLatency::subProcess(
-    int bufferOffset,
-    int sampleFrames
-)
-{
-    float* input =
-        pinInput.getBuffer()
-        + bufferOffset;
-
-    float* output =
-        pinOutput.getBuffer()
-        + bufferOffset;
-
-    const float targetPhase =
-        std::clamp(
-            static_cast<float>(pinPhase),
-            0.0f,
-            1.0f
-        );
-
-    const float phaseStep =
-        sampleFrames > 0
-            ? (targetPhase - currentPhase)
-                / static_cast<float>(sampleFrames)
-            : 0.0f;
-
-    for(int i = 0; i < sampleFrames; ++i)
+public:
+    PhaseRotatorZeroLatency()
     {
-        const float x = *input++;
-
-        currentPhase += phaseStep;
-
-        /*
-            Exact 0 = dry bypass.
-
-            We also continuously align the filter state while bypassed,
-            so moving away from zero does not start from stale history.
-        */
-        if(currentPhase <= 0.000001f)
-        {
-            previousInput  = x;
-            previousOutput = x;
-
-            *output++ = x;
-            continue;
-        }
-
-        const float a =
-            coefficientForPhase(
-                currentPhase
-            );
-
-        const float y =
-            a * x
-            + previousInput
-            - a * previousOutput;
-
-        previousInput  = x;
-        previousOutput = y;
-
-        *output++ = y;
+        initializePin(pinSignalIn);
+        initializePin(pinPhase);
+        initializePin(pinSignalOut);
     }
 
-    currentPhase = targetPhase;
+    int32_t MP_STDCALL open() override
+    {
+        const auto result = MpBase2::open();
+
+        sampleRate_ = getSampleRate();
+        if (sampleRate_ < 8000.0f)
+            sampleRate_ = 44100.0f;
+
+        currentCoefficient_ = coefficientForPhase(
+            std::clamp(static_cast<float>(pinPhase), 0.0f, 1.0f));
+
+        previousInput_ = 0.0f;
+        previousOutput_ = 0.0f;
+
+        // This module has no fixed delay buffer and reports zero latency.
+        host.SetLatency(0);
+
+        return result;
+    }
+
+    void subProcess(int sampleFrames)
+    {
+        auto signalIn = getBuffer(pinSignalIn);
+        auto signalOut = getBuffer(pinSignalOut);
+
+        const float phase = std::clamp(
+            static_cast<float>(pinPhase), 0.0f, 1.0f);
+
+        const float targetCoefficient = coefficientForPhase(phase);
+
+        const float coefficientStep = sampleFrames > 0
+            ? (targetCoefficient - currentCoefficient_) / static_cast<float>(sampleFrames)
+            : 0.0f;
+
+        for (int s = sampleFrames; s > 0; --s)
+        {
+            currentCoefficient_ += coefficientStep;
+
+            const float x = *signalIn++;
+
+            // First-order causal all-pass:
+            // y[n] = a*x[n] + x[n-1] - a*y[n-1]
+            const float y =
+                currentCoefficient_ * x
+                + previousInput_
+                - currentCoefficient_ * previousOutput_;
+
+            previousInput_ = x;
+            previousOutput_ = y;
+
+            *signalOut++ = y;
+        }
+
+        currentCoefficient_ = targetCoefficient;
+    }
+
+    void onSetPins() override
+    {
+        pinSignalOut.setStreaming(true);
+        setSubProcess(&PhaseRotatorZeroLatency::subProcess);
+    }
+
+private:
+    float coefficientForPhase(float normalizedPhase) const noexcept
+    {
+        normalizedPhase = std::clamp(normalizedPhase, 0.0f, 1.0f);
+
+        // The requested rotation is defined at 1 kHz:
+        // 0.00 -> approximately   0 degrees
+        // 0.50 -> approximately -45 degrees
+        // 1.00 -> approximately -90 degrees
+        //
+        // A causal zero-fixed-latency all-pass cannot maintain the same
+        // phase angle over the whole spectrum. The rotation is frequency
+        // dependent, and is a phase lag.
+        const float desiredPhase = normalizedPhase * kHalfPi;
+        const float omega = 2.0f * kPi * kReferenceFrequencyHz / sampleRate_;
+
+        const float tanHalfOmega = std::tan(0.5f * omega);
+        if (std::abs(tanHalfOmega) < 1.0e-12f)
+            return 0.9995f;
+
+        const float ratio = std::tan(0.5f * desiredPhase) / tanHalfOmega;
+        const float a = (1.0f - ratio) / (1.0f + ratio);
+
+        // Keep the pole strictly inside the unit circle.
+        // At Phase=0 the mathematical value is +1; 0.9995 is effectively
+        // dry while avoiding a marginal pole/cancellation implementation.
+        return std::clamp(a, -0.9995f, 0.9995f);
+    }
+};
+
+namespace
+{
+    auto r = Register<PhaseRotatorZeroLatency>::withId(
+        L"Pandocrator Phase Rotator Zero Latency");
 }

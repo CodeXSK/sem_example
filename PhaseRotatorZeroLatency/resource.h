@@ -1,3 +1,2 @@
 #pragma once
-
-#define IDR_XML1 101
+#define IDR_GMPXML1 101

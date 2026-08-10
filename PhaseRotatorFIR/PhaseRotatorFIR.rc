@@ -1,4 +1,5 @@
+// Windows resource file. macOS ignores this file.
 #include "resource.h"
+#include <windows.h>
 
-// Embed the SynthEdit module metadata as an XML resource.
-IDR_XML1 XML "PhaseRotatorFIR.xml"
+IDR_GMPXML1 GMPXML "PhaseRotatorFIR.xml"
