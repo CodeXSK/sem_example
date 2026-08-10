@@ -57,8 +57,8 @@ endif()
 include(plugin_helper.cmake)
 
 # here is where you list your modules
-add_subdirectory(PhaseRotatorZeroLatency)
-add_subdirectory(PhaseRotatorFIR)
-add_subdirectory(SemProbe)
+
+add_subdirectory(SubOctaver)
+
 
 
