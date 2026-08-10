@@ -1,0 +1,4 @@
+#include "resource.h"
+
+// Embed the SynthEdit module metadata as an XML resource.
+IDR_XML1 XML "PhaseRotatorZeroLatency.xml"
