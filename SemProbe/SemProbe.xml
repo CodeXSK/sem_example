@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<PluginList>
+    <Plugin id="Pandocrator SEM Probe"
+            name="SEM Probe Passthrough"
+            category="Pandocrator DSP">
+        <Audio>
+            <Pin name="Signal In" datatype="float" rate="audio" />
+            <Pin name="Signal Out" datatype="float" rate="audio" direction="out" />
+        </Audio>
+    </Plugin>
+</PluginList>
