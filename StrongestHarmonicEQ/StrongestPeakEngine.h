@@ -327,7 +327,7 @@ private:
 
     void updateFilterCoefficients()
     {
-        if (!(trackedHz_ > 0.0f) || boostDb_ <= 0.0f)
+        if (!(trackedHz_ > 0.0f) || std::abs(boostDb_) < 0.001f)
         {
             biquad_.setBypass();
             return;

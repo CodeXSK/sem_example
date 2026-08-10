@@ -27,7 +27,7 @@
           direction="in"
           datatype="float"
           default="6"
-          metadata=",,24,0" />
+          metadata=",,24,-24" />
 
       <Pin
           id="3"
