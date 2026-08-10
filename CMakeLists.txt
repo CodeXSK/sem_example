@@ -60,5 +60,5 @@ include(plugin_helper.cmake)
 
 add_subdirectory(PhaseRotatorZeroLatency)
 add_subdirectory(PhaseRotatorFIR)
-
+add_subdirectory(Crusher)
 
