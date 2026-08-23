@@ -1,0 +1,4 @@
+#include "resource.h"
+#include <windows.h>
+
+IDR_GMPXML1 GMPXML "SubOctaver.xml"
