@@ -58,5 +58,6 @@ include(plugin_helper.cmake)
 
 # here is where you list your modules
 
-add_subdirectory(StrongestHarmonicEQ)
+add_subdirectory(PhaseRotatorZeroLatency)
+add_subdirectory(PhaseRotatorFIR)
 
