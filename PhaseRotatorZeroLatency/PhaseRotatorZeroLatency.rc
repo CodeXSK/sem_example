@@ -1,9 +1,0 @@
-#include "resource.h"
-
-#ifdef _WIN32
-    #include <windows.h>
-    LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#endif
-
-// SynthEdit SDK3 reads module metadata from the GMPXML resource.
-IDR_GMPXML1 GMPXML "PhaseRotatorZeroLatency.xml"
