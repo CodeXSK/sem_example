@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<PluginList>
+  <Plugin
+      id="Pandocrator Strongest Harmonic EQ SEM"
+      name="Strongest Harmonic EQ"
+      category="Pandocrator DSP">
+
+    <Audio>
+      <Pin
+          id="0"
+          name="Audio In"
+          direction="in"
+          datatype="float"
+          rate="audio" />
+
+      <Pin
+          id="1"
+          name="Audio Out"
+          direction="out"
+          datatype="float"
+          rate="audio" />
+
+      <Pin
+          id="2"
+          name="Boost dB"
+          direction="in"
+          datatype="float"
+          default="6"
+          metadata=",,24,-24" />
+
+      <Pin
+          id="3"
+          name="Q"
+          direction="in"
+          datatype="float"
+          default="3"
+          metadata=",,12,0.3" />
+
+      <Pin
+          id="4"
+          name="Min Frequency"
+          direction="in"
+          datatype="float"
+          default="40"
+          metadata=",,2000,20" />
+
+      <Pin
+          id="5"
+          name="Max Frequency"
+          direction="in"
+          datatype="float"
+          default="8000"
+          metadata=",,18000,100" />
+
+      <Pin
+          id="6"
+          name="Tracking ms"
+          direction="in"
+          datatype="float"
+          default="70"
+          metadata=",,500,5" />
+
+      <Pin
+          id="7"
+          name="Detected Hz"
+          direction="out"
+          datatype="float" />
+
+      <Pin
+          id="8"
+          name="EQ Hz"
+          direction="out"
+          datatype="float" />
+    </Audio>
+
+  </Plugin>
+</PluginList>
