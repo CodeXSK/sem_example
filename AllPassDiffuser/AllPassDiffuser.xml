@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin
+      id="Pandocrator Multi AllPass Diffuser v6"
+      name="Multi AllPass Diffuser v6"
+      category="Pandocrator DSP">
+
+    <Audio>
+      <Pin name="Signal In" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- SynthEdit audio/control pins store 1/10 of the voltage shown in the editor.
+           We therefore scale user-facing natural values in the DSP:
+           Stages: 4..10 V => stages 4..10. Default 8 V = XML 0.8.
+           Routing: 0 V = Series, 1 V = 4 Out / 4 In. -->
+      <Pin name="Stages" direction="in" datatype="float" rate="audio" default="0.8" />
+      <Pin name="Routing" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Bipolar all-pass coefficient. Internally clamped to +/-0.97. -->
+      <Pin name="Diffusion" direction="in" datatype="float" rate="audio" default="0.065" />
+
+      <!-- Internal feedback from final output back to network input. -->
+      <Pin name="Feedback" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Bipolar progressive tone control: -1 = darker, 0 = neutral, +1 = brighter. -->
+      <Pin name="Tone" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Audio-rate modulation input, expected approximately -1..+1. -->
+      <Pin name="Mod In" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Mod Depth ms" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Static per-instance decorrelation. 1.5 ms shown in SynthEdit = XML 0.15.
+           Seed 0 means auto: every newly created instance gets a different pattern. -->
+      <Pin name="Random Offset ms" direction="in" datatype="float" rate="audio" default="0.15" />
+      <Pin name="Random Seed" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Optional extra internal feed-forward routes. Off by default so v5 behaviour
+           is preserved unless explicitly enabled.
+           Cross Routes: 0 = Off, 1 = On.
+           When enabled: AP4 -> AP8, AP5 -> AP7, AP6 -> AP10.
+           Cross Amount is the additive send level, displayed 0..1. -->
+      <Pin name="Cross Routes" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Cross Amount" direction="in" datatype="float" rate="audio" default="0.035" />
+
+      <Pin name="Delay 1 ms" direction="in" datatype="float" rate="audio" default="0.471" />
+      <Pin name="Delay 2 ms" direction="in" datatype="float" rate="audio" default="0.783" />
+      <Pin name="Delay 3 ms" direction="in" datatype="float" rate="audio" default="1.119" />
+      <Pin name="Delay 4 ms" direction="in" datatype="float" rate="audio" default="1.367" />
+      <Pin name="Delay 5 ms" direction="in" datatype="float" rate="audio" default="1.729" />
+      <Pin name="Delay 6 ms" direction="in" datatype="float" rate="audio" default="1.993" />
+      <Pin name="Delay 7 ms" direction="in" datatype="float" rate="audio" default="2.347" />
+      <Pin name="Delay 8 ms" direction="in" datatype="float" rate="audio" default="2.971" />
+      <Pin name="Delay 9 ms" direction="in" datatype="float" rate="audio" default="3.113" />
+      <Pin name="Delay 10 ms" direction="in" datatype="float" rate="audio" default="3.791" />
+
+      <!-- Used only when Routing >= 0.5. These are additive injection points
+           before AP5, AP6, AP7 and AP8 respectively. -->
+      <Pin name="Bank B In 1" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Bank B In 2" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Bank B In 3" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Bank B In 4" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <Pin name="Signal Out" direction="out" datatype="float" rate="audio" />
+
+      <!-- Taps from the first four all-pass stages. -->
+      <Pin name="Bank A Out 1" direction="out" datatype="float" rate="audio" />
+      <Pin name="Bank A Out 2" direction="out" datatype="float" rate="audio" />
+      <Pin name="Bank A Out 3" direction="out" datatype="float" rate="audio" />
+      <Pin name="Bank A Out 4" direction="out" datatype="float" rate="audio" />
+    </Audio>
+  </Plugin>
+</PluginList>
