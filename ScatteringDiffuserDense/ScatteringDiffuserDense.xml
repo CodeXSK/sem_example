@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin
+      id="Pandocrator Scattering Diffuser v2 Dense Blur"
+      name="Scattering Diffuser v2 Dense Blur"
+      category="Pandocrator DSP">
+
+    <Audio>
+      <Pin name="Signal In" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- 1..4 complete scattering banks. -->
+      <Pin name="Density" direction="in" datatype="float" rate="audio" default="0.4" />
+
+      <!-- 0 = one tap per delay, 1 = full 12-tap cloud per delay. -->
+      <Pin name="Blur Density" direction="in" datatype="float" rate="audio" default="0.092" />
+
+      <!-- Temporal spread of the 12 taps inside every delay line. -->
+      <Pin name="Cloud Spread ms" direction="in" datatype="float" rate="audio" default="0.8" />
+
+      <Pin name="Tone" direction="in" datatype="float" rate="audio" default="-0.012" />
+      <Pin name="Master Size" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <Pin name="Random Offset ms" direction="in" datatype="float" rate="audio" default="0.06" />
+      <Pin name="Random Seed" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <Pin name="Matrix Enable" direction="in" datatype="float" rate="audio" default="0.1" />
+      <Pin name="Matrix Amount" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <Pin name="Shuffle Time" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Shuffle Polarity" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Stereo Spread" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <Pin name="Delay 1 ms" direction="in" datatype="float" rate="audio" default="0.471" />
+      <Pin name="Delay 2 ms" direction="in" datatype="float" rate="audio" default="0.783" />
+      <Pin name="Delay 3 ms" direction="in" datatype="float" rate="audio" default="1.119" />
+      <Pin name="Delay 4 ms" direction="in" datatype="float" rate="audio" default="1.367" />
+
+      <Pin name="Delay 5 ms" direction="in" datatype="float" rate="audio" default="0.731" />
+      <Pin name="Delay 6 ms" direction="in" datatype="float" rate="audio" default="1.193" />
+      <Pin name="Delay 7 ms" direction="in" datatype="float" rate="audio" default="1.679" />
+      <Pin name="Delay 8 ms" direction="in" datatype="float" rate="audio" default="2.213" />
+
+      <Pin name="Delay 9 ms" direction="in" datatype="float" rate="audio" default="1.127" />
+      <Pin name="Delay 10 ms" direction="in" datatype="float" rate="audio" default="1.789" />
+      <Pin name="Delay 11 ms" direction="in" datatype="float" rate="audio" default="2.471" />
+      <Pin name="Delay 12 ms" direction="in" datatype="float" rate="audio" default="3.113" />
+
+      <Pin name="Delay 13 ms" direction="in" datatype="float" rate="audio" default="1.729" />
+      <Pin name="Delay 14 ms" direction="in" datatype="float" rate="audio" default="2.591" />
+      <Pin name="Delay 15 ms" direction="in" datatype="float" rate="audio" default="3.467" />
+      <Pin name="Delay 16 ms" direction="in" datatype="float" rate="audio" default="4.309" />
+
+      <Pin name="Signal Out" direction="out" datatype="float" rate="audio" />
+      <Pin name="Left Out" direction="out" datatype="float" rate="audio" />
+      <Pin name="Right Out" direction="out" datatype="float" rate="audio" />
+
+      <Pin name="Lane Out 1" direction="out" datatype="float" rate="audio" />
+      <Pin name="Lane Out 2" direction="out" datatype="float" rate="audio" />
+      <Pin name="Lane Out 3" direction="out" datatype="float" rate="audio" />
+      <Pin name="Lane Out 4" direction="out" datatype="float" rate="audio" />
+    </Audio>
+  </Plugin>
+</PluginList>
