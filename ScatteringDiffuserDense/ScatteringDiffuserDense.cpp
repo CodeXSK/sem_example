@@ -1,0 +1,684 @@
+#include "mp_sdk_audio.h"
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <chrono>
+#include <vector>
+
+using namespace gmpi;
+
+namespace
+{
+    constexpr int   kLanes = 4;
+    constexpr int   kBanks = 4;
+    constexpr int   kDelayCount = kLanes * kBanks;
+    constexpr int   kCloudTaps = 12;
+    constexpr float kPi = 3.14159265358979323846f;
+    constexpr float kTwoPi = 2.0f * kPi;
+    constexpr float kMaxDelayMs = 350.0f;
+    constexpr float kMaxCloudSpreadMs = 30.0f;
+    constexpr float kMaxSupportedSampleRate = 384000.0f;
+    constexpr float kMaxTone = 1.0f;
+    constexpr float kMaxRandomOffsetMs = 12.0f;
+    constexpr float kMinMasterSize = 0.25f;
+    constexpr float kMaxMasterSize = 4.0f;
+    constexpr float kParameterSmoothingMs = 25.0f;
+    constexpr float kDelaySmoothingMs = 30.0f;
+    constexpr float kRandomOffsetSmoothingMs = 140.0f;
+
+    // SynthEdit audio/control pins use internal units where 1.0 = 10 displayed units.
+    constexpr float kInternalToDisplayedUnits = 10.0f;
+
+    // Buffer includes room for the base delay plus the cloud spread.
+    constexpr int kDelayBufferSamples =
+        static_cast<int>(kMaxSupportedSampleRate * ((kMaxDelayMs + kMaxCloudSpreadMs) * 0.001f)) + 16;
+
+    inline float clampf(float x, float lo, float hi)
+    {
+        return (std::max)(lo, (std::min)(hi, x));
+    }
+
+    inline float finiteOrZero(float x)
+    {
+        return std::isfinite(x) ? x : 0.0f;
+    }
+
+    inline float zapDenormal(float x)
+    {
+        return std::abs(x) < 1.0e-30f ? 0.0f : x;
+    }
+
+    class SmoothedValue
+    {
+    public:
+        void reset(float value)
+        {
+            current_ = target_ = value;
+        }
+
+        void setTime(float timeMs, float sampleRate)
+        {
+            const float seconds = (std::max)(0.0001f, timeMs * 0.001f);
+            coefficient_ = std::exp(-1.0f / (seconds * sampleRate));
+        }
+
+        void setTarget(float target)
+        {
+            target_ = target;
+        }
+
+        float next()
+        {
+            current_ = target_ + coefficient_ * (current_ - target_);
+            current_ = zapDenormal(current_);
+            return current_;
+        }
+
+    private:
+        float current_ = 0.0f;
+        float target_ = 0.0f;
+        float coefficient_ = 0.0f;
+    };
+
+    // One write, many fractional reads. This is feed-forward only.
+    // At Blur Density = 0 it behaves like one ordinary delay tap.
+    // At Blur Density = 1 it produces a 12-tap stratified/velvet-style cloud.
+    class CloudDelay
+    {
+    public:
+        CloudDelay()
+            : buffer_(static_cast<std::size_t>(kDelayBufferSamples), 0.0f)
+        {
+        }
+
+        void clear()
+        {
+            std::fill(buffer_.begin(), buffer_.end(), 0.0f);
+            writeIndex_ = 0;
+        }
+
+        float process(
+            float input,
+            float baseDelaySamples,
+            float spreadSamples,
+            const std::array<float, kCloudTaps>& tapPositions,
+            const std::array<float, kCloudTaps>& tapSigns,
+            float blurDensity)
+        {
+            input = finiteOrZero(input);
+            baseDelaySamples = clampf(finiteOrZero(baseDelaySamples), 1.0f, static_cast<float>(kDelayBufferSamples - 4));
+            spreadSamples = clampf(finiteOrZero(spreadSamples), 0.0f, static_cast<float>(kDelayBufferSamples - 4));
+            blurDensity = clampf(finiteOrZero(blurDensity), 0.0f, 1.0f);
+
+            // Read before write so minimum delay remains at least one sample.
+            const float single = readFractional(baseDelaySamples);
+
+            float cloud = 0.0f;
+            constexpr float norm = 1.0f / std::sqrt(static_cast<float>(kCloudTaps));
+            for (int tap = 0; tap < kCloudTaps; ++tap)
+            {
+                // Positions are stratified 0..1, so the cloud extends AFTER the base delay.
+                // This avoids several short base delays collapsing at the 1-sample clamp.
+                const float d = baseDelaySamples + tapPositions[static_cast<std::size_t>(tap)] * spreadSamples;
+                cloud += tapSigns[static_cast<std::size_t>(tap)] * readFractional(d);
+            }
+            cloud *= norm;
+
+            buffer_[static_cast<std::size_t>(writeIndex_)] = zapDenormal(input);
+            ++writeIndex_;
+            if (writeIndex_ >= kDelayBufferSamples)
+                writeIndex_ = 0;
+
+            // Continuous morph from one clear tap into the dense cloud.
+            const float output = single + blurDensity * (cloud - single);
+            return zapDenormal(finiteOrZero(output));
+        }
+
+    private:
+        float readFractional(float delaySamples) const
+        {
+            const float maxDelay = static_cast<float>(kDelayBufferSamples - 3);
+            delaySamples = clampf(delaySamples, 1.0f, maxDelay);
+
+            float readPosition = static_cast<float>(writeIndex_) - delaySamples;
+            while (readPosition < 0.0f)
+                readPosition += static_cast<float>(kDelayBufferSamples);
+            while (readPosition >= static_cast<float>(kDelayBufferSamples))
+                readPosition -= static_cast<float>(kDelayBufferSamples);
+
+            const int index0 = static_cast<int>(readPosition);
+            const int index1 = (index0 + 1) % kDelayBufferSamples;
+            const float fraction = readPosition - static_cast<float>(index0);
+
+            const float d0 = finiteOrZero(buffer_[static_cast<std::size_t>(index0)]);
+            const float d1 = finiteOrZero(buffer_[static_cast<std::size_t>(index1)]);
+            return finiteOrZero(d0 + fraction * (d1 - d0));
+        }
+
+        std::vector<float> buffer_;
+        int writeIndex_ = 0;
+    };
+
+    class ToneFilter
+    {
+    public:
+        void clear()
+        {
+            lowState_ = 0.0f;
+            bassState_ = 0.0f;
+        }
+
+        void setSampleRate(float sampleRate, int bankIndex)
+        {
+            sampleRate_ = (std::max)(1000.0f, sampleRate);
+            progress_ = clampf((static_cast<float>(bankIndex) + 1.0f) / static_cast<float>(kBanks), 0.25f, 1.0f);
+
+            const float darkCutoffHz = 19000.0f + progress_ * (7200.0f - 19000.0f);
+            const float bassCutoffHz = 40.0f + progress_ * (150.0f - 40.0f);
+            lowCoeff_ = onePoleCoeff(darkCutoffHz, sampleRate_);
+            bassCoeff_ = onePoleCoeff(bassCutoffHz, sampleRate_);
+        }
+
+        float process(float input, float tone)
+        {
+            input = finiteOrZero(input);
+            tone = clampf(finiteOrZero(tone), -kMaxTone, kMaxTone);
+
+            lowState_ += lowCoeff_ * (input - lowState_);
+            lowState_ = zapDenormal(finiteOrZero(lowState_));
+
+            bassState_ += bassCoeff_ * (input - bassState_);
+            bassState_ = zapDenormal(finiteOrZero(bassState_));
+            const float highPassed = finiteOrZero(input - bassState_);
+
+            const float darkMix = (std::max)(0.0f, -tone) * (0.08f + 0.35f * progress_);
+            const float brightMix = (std::max)(0.0f, tone) * (0.02f + 0.08f * progress_);
+
+            float output = input + darkMix * (lowState_ - input);
+            output += brightMix * (highPassed - output);
+            return zapDenormal(finiteOrZero(output));
+        }
+
+    private:
+        static float onePoleCoeff(float cutoffHz, float sampleRate)
+        {
+            const float fc = clampf(cutoffHz, 5.0f, 0.45f * sampleRate);
+            return 1.0f - std::exp(-kTwoPi * fc / sampleRate);
+        }
+
+        float sampleRate_ = 44100.0f;
+        float progress_ = 0.25f;
+        float lowState_ = 0.0f;
+        float bassState_ = 0.0f;
+        float lowCoeff_ = 1.0f;
+        float bassCoeff_ = 0.01f;
+    };
+
+    inline std::uint32_t xorshift32(std::uint32_t& state)
+    {
+        if (state == 0)
+            state = 0x6d2b79f5u;
+        state ^= state << 13;
+        state ^= state >> 17;
+        state ^= state << 5;
+        return state;
+    }
+
+    inline float randomUnit(std::uint32_t& state)
+    {
+        const std::uint32_t v = xorshift32(state);
+        return static_cast<float>(v & 0x00ffffffu) / 16777215.0f;
+    }
+
+    inline float randomBipolar(std::uint32_t& state)
+    {
+        return randomUnit(state) * 2.0f - 1.0f;
+    }
+
+    inline std::array<float, kLanes> hadamard4(const std::array<float, kLanes>& x)
+    {
+        return {{
+            0.5f * (x[0] + x[1] + x[2] + x[3]),
+            0.5f * (x[0] - x[1] + x[2] - x[3]),
+            0.5f * (x[0] + x[1] - x[2] - x[3]),
+            0.5f * (x[0] - x[1] - x[2] + x[3])
+        }};
+    }
+
+    inline float dot4(const std::array<float, kLanes>& x, const std::array<float, kLanes>& w)
+    {
+        return x[0] * w[0] + x[1] * w[1] + x[2] * w[2] + x[3] * w[3];
+    }
+}
+
+// Pandocrator Scattering Diffuser v2 - Dense Blur
+// ------------------------------------------------
+// 4 lanes x 4 feed-forward scattering banks.
+// Each of the 16 delay lines can morph from one tap into a 12-tap
+// stratified cloud. This raises temporal density drastically without
+// introducing any recursive feedback pole.
+class ScatteringDiffuserDense final : public MpBase2
+{
+public:
+    ScatteringDiffuserDense()
+    {
+        // Pin order MUST match ScatteringDiffuserDense.xml.
+        initializePin(pinSignalIn);
+        initializePin(pinDensity);
+        initializePin(pinBlurDensity);
+        initializePin(pinCloudSpreadMs);
+        initializePin(pinTone);
+        initializePin(pinMasterSize);
+        initializePin(pinRandomOffsetMs);
+        initializePin(pinRandomSeed);
+        initializePin(pinMatrixEnable);
+        initializePin(pinMatrixAmount);
+        initializePin(pinShuffleTime);
+        initializePin(pinShufflePolarity);
+        initializePin(pinStereoSpread);
+
+        for (auto& pin : pinDelayMs)
+            initializePin(pin);
+
+        initializePin(pinSignalOut);
+        initializePin(pinLeftOut);
+        initializePin(pinRightOut);
+        for (auto& pin : pinLaneOut)
+            initializePin(pin);
+
+        // Longer, irregular times than v1. The cloud fills the spaces between them.
+        const std::array<float, kDelayCount> defaults = {{
+             4.71f,  7.83f, 11.19f, 13.67f,
+             7.31f, 11.93f, 16.79f, 22.13f,
+            11.27f, 17.89f, 24.71f, 31.13f,
+            17.29f, 25.91f, 34.67f, 43.09f
+        }};
+
+        for (int i = 0; i < kDelayCount; ++i)
+        {
+            delaySmoothers_[static_cast<std::size_t>(i)].reset(defaults[static_cast<std::size_t>(i)]);
+            randomOffsetSmoothers_[static_cast<std::size_t>(i)].reset(0.0f);
+        }
+
+        densitySmoother_.reset(4.0f);
+        blurDensitySmoother_.reset(0.92f);
+        cloudSpreadSmoother_.reset(8.0f);
+        toneSmoother_.reset(-0.12f);
+        masterSizeSmoother_.reset(1.0f);
+        matrixEnableSmoother_.reset(1.0f);
+        matrixAmountSmoother_.reset(1.0f);
+        shuffleTimeSmoother_.reset(0.0f);
+        shufflePolaritySmoother_.reset(0.0f);
+        stereoSpreadSmoother_.reset(1.0f);
+
+        const auto now = static_cast<std::uint64_t>(
+            std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        const auto self = static_cast<std::uint64_t>(reinterpret_cast<std::uintptr_t>(this));
+        autoSeed_ = static_cast<std::uint32_t>((now ^ (self + 0x9e3779b97f4a7c15ULL)) & 0xffffffffu);
+        if (autoSeed_ == 0)
+            autoSeed_ = 0x5bd1e995u;
+
+        regeneratePattern(autoSeed_);
+    }
+
+    void subProcess(int sampleFrames)
+    {
+        updateSampleRateIfNeeded();
+
+        auto signalIn = getBuffer(pinSignalIn);
+        auto densityPin = getBuffer(pinDensity);
+        auto blurDensityPin = getBuffer(pinBlurDensity);
+        auto cloudSpreadPin = getBuffer(pinCloudSpreadMs);
+        auto tonePin = getBuffer(pinTone);
+        auto masterSizePin = getBuffer(pinMasterSize);
+        auto randomOffsetPin = getBuffer(pinRandomOffsetMs);
+        auto randomSeedPin = getBuffer(pinRandomSeed);
+        auto matrixEnablePin = getBuffer(pinMatrixEnable);
+        auto matrixAmountPin = getBuffer(pinMatrixAmount);
+        auto shuffleTimePin = getBuffer(pinShuffleTime);
+        auto shufflePolarityPin = getBuffer(pinShufflePolarity);
+        auto stereoSpreadPin = getBuffer(pinStereoSpread);
+
+        std::array<float*, kDelayCount> delayPins{};
+        for (int i = 0; i < kDelayCount; ++i)
+            delayPins[static_cast<std::size_t>(i)] = getBuffer(pinDelayMs[static_cast<std::size_t>(i)]);
+
+        auto signalOut = getBuffer(pinSignalOut);
+        auto leftOut = getBuffer(pinLeftOut);
+        auto rightOut = getBuffer(pinRightOut);
+        std::array<float*, kLanes> laneOutputs{};
+        for (int lane = 0; lane < kLanes; ++lane)
+            laneOutputs[static_cast<std::size_t>(lane)] = getBuffer(pinLaneOut[static_cast<std::size_t>(lane)]);
+
+        densitySmoother_.setTarget(clampf(
+            finiteOrZero(*densityPin) * kInternalToDisplayedUnits, 1.0f, 4.0f));
+
+        blurDensitySmoother_.setTarget(clampf(
+            finiteOrZero(*blurDensityPin) * kInternalToDisplayedUnits, 0.0f, 1.0f));
+
+        cloudSpreadSmoother_.setTarget(clampf(
+            finiteOrZero(*cloudSpreadPin) * kInternalToDisplayedUnits, 0.0f, kMaxCloudSpreadMs));
+
+        toneSmoother_.setTarget(clampf(
+            finiteOrZero(*tonePin) * kInternalToDisplayedUnits, -kMaxTone, kMaxTone));
+
+        masterSizeSmoother_.setTarget(clampf(
+            finiteOrZero(*masterSizePin) * kInternalToDisplayedUnits, kMinMasterSize, kMaxMasterSize));
+
+        const float randomAmountMs = clampf(
+            finiteOrZero(*randomOffsetPin) * kInternalToDisplayedUnits, 0.0f, kMaxRandomOffsetMs);
+
+        const int requestedSeed = (std::max)(0, static_cast<int>(std::lround(
+            finiteOrZero(*randomSeedPin) * kInternalToDisplayedUnits)));
+        const std::uint32_t effectiveSeed = requestedSeed == 0
+            ? autoSeed_
+            : static_cast<std::uint32_t>(requestedSeed);
+        if (effectiveSeed != activeSeed_)
+            regeneratePattern(effectiveSeed);
+
+        const float matrixEnableValue = finiteOrZero(*matrixEnablePin) * kInternalToDisplayedUnits;
+        matrixEnableSmoother_.setTarget(matrixEnableValue >= 0.5f ? 1.0f : 0.0f);
+        matrixAmountSmoother_.setTarget(clampf(
+            finiteOrZero(*matrixAmountPin) * kInternalToDisplayedUnits, 0.0f, 1.0f));
+
+        const float shuffleTimeValue = finiteOrZero(*shuffleTimePin) * kInternalToDisplayedUnits;
+        shuffleTimeSmoother_.setTarget(shuffleTimeValue >= 0.5f ? 1.0f : 0.0f);
+
+        const float shufflePolarityValue = finiteOrZero(*shufflePolarityPin) * kInternalToDisplayedUnits;
+        shufflePolaritySmoother_.setTarget(shufflePolarityValue >= 0.5f ? 1.0f : 0.0f);
+
+        stereoSpreadSmoother_.setTarget(clampf(
+            finiteOrZero(*stereoSpreadPin) * kInternalToDisplayedUnits, 0.0f, 1.0f));
+
+        for (int i = 0; i < kDelayCount; ++i)
+        {
+            const float ms = clampf(
+                finiteOrZero(*delayPins[static_cast<std::size_t>(i)]) * kInternalToDisplayedUnits,
+                0.1f, kMaxDelayMs);
+            delaySmoothers_[static_cast<std::size_t>(i)].setTarget(ms);
+            randomOffsetSmoothers_[static_cast<std::size_t>(i)].setTarget(
+                randomPattern_[static_cast<std::size_t>(i)] * randomAmountMs);
+        }
+
+        for (int s = 0; s < sampleFrames; ++s)
+        {
+            const float input = finiteOrZero(*signalIn++);
+            const float density = densitySmoother_.next();
+            const float blurDensity = blurDensitySmoother_.next();
+            const float cloudSpreadMs = cloudSpreadSmoother_.next();
+            const float tone = toneSmoother_.next();
+            const float size = masterSizeSmoother_.next();
+            const float matrixEnable = matrixEnableSmoother_.next();
+            const float matrixAmount = matrixAmountSmoother_.next() * matrixEnable;
+            const float shuffleTime = shuffleTimeSmoother_.next();
+            const float shufflePolarity = shufflePolaritySmoother_.next();
+            const float stereoSpread = stereoSpreadSmoother_.next();
+
+            std::array<float, kDelayCount> currentDelayMs{};
+            for (int i = 0; i < kDelayCount; ++i)
+            {
+                const float base = delaySmoothers_[static_cast<std::size_t>(i)].next();
+                const float offset = randomOffsetSmoothers_[static_cast<std::size_t>(i)].next();
+                currentDelayMs[static_cast<std::size_t>(i)] = base + offset;
+            }
+
+            // Four equal-energy initial lanes.
+            std::array<float, kLanes> lanes{{ input * 0.5f, input * 0.5f, input * 0.5f, input * 0.5f }};
+            std::array<std::array<float, kLanes>, kBanks> bankStates{};
+
+            for (int bank = 0; bank < kBanks; ++bank)
+            {
+                std::array<float, kLanes> delayed{};
+
+                for (int lane = 0; lane < kLanes; ++lane)
+                {
+                    const int directLocal = lane;
+                    const int shuffledLocal = timePermutation_[static_cast<std::size_t>(bank)][static_cast<std::size_t>(lane)];
+                    const int directIndex = bank * kLanes + directLocal;
+                    const int shuffledIndex = bank * kLanes + shuffledLocal;
+
+                    const float directMs = currentDelayMs[static_cast<std::size_t>(directIndex)];
+                    const float shuffledMs = currentDelayMs[static_cast<std::size_t>(shuffledIndex)];
+                    const float selectedMs = directMs + shuffleTime * (shuffledMs - directMs);
+                    const float baseDelayMs = clampf(selectedMs * size, 0.1f, kMaxDelayMs);
+
+                    // The cloud spread also scales with Size, because it represents physical/temporal extent.
+                    const float spreadMs = clampf(cloudSpreadMs * size, 0.0f, kMaxCloudSpreadMs);
+
+                    float y = delays_[static_cast<std::size_t>(directIndex)].process(
+                        lanes[static_cast<std::size_t>(lane)],
+                        baseDelayMs * 0.001f * currentSampleRate_,
+                        spreadMs * 0.001f * currentSampleRate_,
+                        cloudTapPositions_[static_cast<std::size_t>(directIndex)],
+                        cloudTapSigns_[static_cast<std::size_t>(directIndex)],
+                        blurDensity);
+
+                    y = toneFilters_[static_cast<std::size_t>(directIndex)].process(y, tone);
+
+                    const float sign = 1.0f + shufflePolarity *
+                        (inputSigns_[static_cast<std::size_t>(bank)][static_cast<std::size_t>(lane)] - 1.0f);
+                    delayed[static_cast<std::size_t>(lane)] = y * sign;
+                }
+
+                const auto h = hadamard4(delayed);
+                std::array<float, kLanes> scattered{};
+
+                for (int lane = 0; lane < kLanes; ++lane)
+                {
+                    const int row = fixedMatrixPermutation_[static_cast<std::size_t>(bank)][static_cast<std::size_t>(lane)];
+                    const float outSign = 1.0f + shufflePolarity *
+                        (outputSigns_[static_cast<std::size_t>(bank)][static_cast<std::size_t>(lane)] - 1.0f);
+                    const float matrixSignal = h[static_cast<std::size_t>(row)] * outSign;
+                    scattered[static_cast<std::size_t>(lane)] =
+                        delayed[static_cast<std::size_t>(lane)] +
+                        matrixAmount * (matrixSignal - delayed[static_cast<std::size_t>(lane)]);
+                }
+
+                lanes = scattered;
+                bankStates[static_cast<std::size_t>(bank)] = lanes;
+            }
+
+            // Density remains the number of complete scattering banks (1..4).
+            const float d = clampf(density, 1.0f, 4.0f);
+            const int lowerBank = (std::min)(kBanks - 1, (std::max)(0, static_cast<int>(std::floor(d)) - 1));
+            const int upperBank = (std::min)(kBanks - 1, lowerBank + 1);
+            const float frac = (upperBank == lowerBank) ? 0.0f : d - std::floor(d);
+
+            std::array<float, kLanes> selected{};
+            for (int lane = 0; lane < kLanes; ++lane)
+            {
+                const float a = bankStates[static_cast<std::size_t>(lowerBank)][static_cast<std::size_t>(lane)];
+                const float b = bankStates[static_cast<std::size_t>(upperBank)][static_cast<std::size_t>(lane)];
+                selected[static_cast<std::size_t>(lane)] = a + frac * (b - a);
+            }
+
+            // Non-Hadamard-aligned decoding. v1 used symmetric sums that could cancel much
+            // of the very scattering we had created. These unit-ish vectors retain all lanes.
+            static constexpr std::array<float, kLanes> monoWeights{{ 0.492518f, -0.321645f, 0.683495f, 0.432210f }};
+            static constexpr std::array<float, kLanes> leftWeights{{ 0.712501f, 0.373262f, -0.249175f, 0.539379f }};
+            static constexpr std::array<float, kLanes> rightWeights{{ 0.373262f, 0.712501f, 0.539379f, -0.249175f }};
+
+            const float mono = dot4(selected, monoWeights);
+            const float leftWide = dot4(selected, leftWeights);
+            const float rightWide = dot4(selected, rightWeights);
+            const float left = mono + stereoSpread * (leftWide - mono);
+            const float right = mono + stereoSpread * (rightWide - mono);
+
+            *signalOut++ = zapDenormal(finiteOrZero(mono));
+            *leftOut++ = zapDenormal(finiteOrZero(left));
+            *rightOut++ = zapDenormal(finiteOrZero(right));
+            for (int lane = 0; lane < kLanes; ++lane)
+                *laneOutputs[static_cast<std::size_t>(lane)]++ = zapDenormal(finiteOrZero(selected[static_cast<std::size_t>(lane)]));
+        }
+    }
+
+    void onSetPins() override
+    {
+        pinSignalOut.setStreaming(true);
+        pinLeftOut.setStreaming(true);
+        pinRightOut.setStreaming(true);
+        for (auto& pin : pinLaneOut)
+            pin.setStreaming(true);
+
+        setSleep(false);
+        setSubProcess(&ScatteringDiffuserDense::subProcess);
+    }
+
+private:
+    void updateSampleRateIfNeeded()
+    {
+        const float newRate = (std::max)(1000.0f, finiteOrZero(getSampleRate()));
+        if (std::abs(newRate - currentSampleRate_) < 0.5f)
+            return;
+
+        currentSampleRate_ = newRate;
+
+        densitySmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        blurDensitySmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        cloudSpreadSmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        toneSmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        masterSizeSmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        matrixEnableSmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        matrixAmountSmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        shuffleTimeSmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        shufflePolaritySmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+        stereoSpreadSmoother_.setTime(kParameterSmoothingMs, currentSampleRate_);
+
+        for (auto& smoother : delaySmoothers_)
+            smoother.setTime(kDelaySmoothingMs, currentSampleRate_);
+        for (auto& smoother : randomOffsetSmoothers_)
+            smoother.setTime(kRandomOffsetSmoothingMs, currentSampleRate_);
+
+        for (auto& delay : delays_)
+            delay.clear();
+
+        for (int i = 0; i < kDelayCount; ++i)
+        {
+            toneFilters_[static_cast<std::size_t>(i)].clear();
+            toneFilters_[static_cast<std::size_t>(i)].setSampleRate(currentSampleRate_, i / kLanes);
+        }
+    }
+
+    void regeneratePattern(std::uint32_t seed)
+    {
+        activeSeed_ = seed == 0 ? 0x5bd1e995u : seed;
+        std::uint32_t state = activeSeed_;
+
+        for (int i = 0; i < kDelayCount; ++i)
+        {
+            float r = randomBipolar(state);
+            if (std::abs(r) < 0.10f)
+                r = r < 0.0f ? -0.10f : 0.10f;
+            randomPattern_[static_cast<std::size_t>(i)] = r;
+
+            // Stratified tap positions: exactly one tap per cell, with jitter.
+            // This is much denser and less clumpy than unconstrained random taps.
+            for (int tap = 0; tap < kCloudTaps; ++tap)
+            {
+                const float jitter = 0.12f + 0.76f * randomUnit(state);
+                cloudTapPositions_[static_cast<std::size_t>(i)][static_cast<std::size_t>(tap)] =
+                    (static_cast<float>(tap) + jitter) / static_cast<float>(kCloudTaps);
+            }
+
+            // Balanced random polarities reduce strong DC/comb coloration.
+            std::array<float, kCloudTaps> signs{};
+            for (int tap = 0; tap < kCloudTaps; ++tap)
+                signs[static_cast<std::size_t>(tap)] = tap < (kCloudTaps / 2) ? 1.0f : -1.0f;
+            for (int tap = kCloudTaps - 1; tap > 0; --tap)
+            {
+                const int j = static_cast<int>(xorshift32(state) % static_cast<std::uint32_t>(tap + 1));
+                std::swap(signs[static_cast<std::size_t>(tap)], signs[static_cast<std::size_t>(j)]);
+            }
+            cloudTapSigns_[static_cast<std::size_t>(i)] = signs;
+        }
+
+        for (int bank = 0; bank < kBanks; ++bank)
+        {
+            for (int lane = 0; lane < kLanes; ++lane)
+            {
+                timePermutation_[static_cast<std::size_t>(bank)][static_cast<std::size_t>(lane)] = lane;
+                inputSigns_[static_cast<std::size_t>(bank)][static_cast<std::size_t>(lane)] =
+                    randomBipolar(state) >= 0.0f ? 1.0f : -1.0f;
+                outputSigns_[static_cast<std::size_t>(bank)][static_cast<std::size_t>(lane)] =
+                    randomBipolar(state) >= 0.0f ? 1.0f : -1.0f;
+            }
+
+            auto& p = timePermutation_[static_cast<std::size_t>(bank)];
+            for (int i = kLanes - 1; i > 0; --i)
+            {
+                const int j = static_cast<int>(xorshift32(state) % static_cast<std::uint32_t>(i + 1));
+                std::swap(p[static_cast<std::size_t>(i)], p[static_cast<std::size_t>(j)]);
+            }
+        }
+    }
+
+    AudioInPin pinSignalIn;
+    AudioInPin pinDensity;
+    AudioInPin pinBlurDensity;
+    AudioInPin pinCloudSpreadMs;
+    AudioInPin pinTone;
+    AudioInPin pinMasterSize;
+    AudioInPin pinRandomOffsetMs;
+    AudioInPin pinRandomSeed;
+    AudioInPin pinMatrixEnable;
+    AudioInPin pinMatrixAmount;
+    AudioInPin pinShuffleTime;
+    AudioInPin pinShufflePolarity;
+    AudioInPin pinStereoSpread;
+    std::array<AudioInPin, kDelayCount> pinDelayMs;
+
+    AudioOutPin pinSignalOut;
+    AudioOutPin pinLeftOut;
+    AudioOutPin pinRightOut;
+    std::array<AudioOutPin, kLanes> pinLaneOut;
+
+    std::array<CloudDelay, kDelayCount> delays_;
+    std::array<ToneFilter, kDelayCount> toneFilters_;
+    std::array<SmoothedValue, kDelayCount> delaySmoothers_;
+    std::array<SmoothedValue, kDelayCount> randomOffsetSmoothers_;
+
+    SmoothedValue densitySmoother_;
+    SmoothedValue blurDensitySmoother_;
+    SmoothedValue cloudSpreadSmoother_;
+    SmoothedValue toneSmoother_;
+    SmoothedValue masterSizeSmoother_;
+    SmoothedValue matrixEnableSmoother_;
+    SmoothedValue matrixAmountSmoother_;
+    SmoothedValue shuffleTimeSmoother_;
+    SmoothedValue shufflePolaritySmoother_;
+    SmoothedValue stereoSpreadSmoother_;
+
+    std::array<float, kDelayCount> randomPattern_{};
+    std::array<std::array<float, kCloudTaps>, kDelayCount> cloudTapPositions_{};
+    std::array<std::array<float, kCloudTaps>, kDelayCount> cloudTapSigns_{};
+
+    std::array<std::array<int, kLanes>, kBanks> timePermutation_{{
+        {{0, 1, 2, 3}}, {{0, 1, 2, 3}}, {{0, 1, 2, 3}}, {{0, 1, 2, 3}}
+    }};
+    std::array<std::array<float, kLanes>, kBanks> inputSigns_{{
+        {{1, 1, 1, 1}}, {{1, 1, 1, 1}}, {{1, 1, 1, 1}}, {{1, 1, 1, 1}}
+    }};
+    std::array<std::array<float, kLanes>, kBanks> outputSigns_{{
+        {{1, 1, 1, 1}}, {{1, 1, 1, 1}}, {{1, 1, 1, 1}}, {{1, 1, 1, 1}}
+    }};
+
+    const std::array<std::array<int, kLanes>, kBanks> fixedMatrixPermutation_{{
+        {{0, 1, 2, 3}},
+        {{1, 3, 0, 2}},
+        {{2, 0, 3, 1}},
+        {{3, 2, 1, 0}}
+    }};
+
+    std::uint32_t autoSeed_ = 1u;
+    std::uint32_t activeSeed_ = 0u;
+    float currentSampleRate_ = 0.0f;
+};
+
+namespace
+{
+    auto registration =
+        Register<ScatteringDiffuserDense>::withId(L"Pandocrator Scattering Diffuser v2 Dense Blur");
+}
