@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin
+      id="Pandocrator Matrix Diffuser v1"
+      name="Matrix Diffuser v1"
+      category="Pandocrator DSP">
+
+    <Audio>
+      <Pin name="Signal In" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Displayed Diffusion -0.97..+0.97. Default 0.58. -->
+      <Pin name="Diffusion" direction="in" datatype="float" rate="audio" default="0.058" />
+
+      <!-- -1 = darker, 0 = neutral, +1 = brighter. Default -0.15. -->
+      <Pin name="Tone" direction="in" datatype="float" rate="audio" default="-0.015" />
+
+      <!-- Multiplies all base/random delay times. 1.0 = original size. -->
+      <Pin name="Master Size" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <!-- Static per-instance timing decorrelation. Seed 0 = unique new instance. -->
+      <Pin name="Random Offset ms" direction="in" datatype="float" rate="audio" default="0.08" />
+      <Pin name="Random Seed" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Optional normalized 4x4 Hadamard mixing between the two 4-lane banks. -->
+      <Pin name="Matrix Enable" direction="in" datatype="float" rate="audio" default="0.1" />
+      <Pin name="Matrix Amount" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <!-- Seed-derived internal variations. Off by default. -->
+      <Pin name="Shuffle Time" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Shuffle Polarity" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- Very small independent per-stage movement. Depth 0 = completely static. -->
+      <Pin name="Micro Mod Depth ms" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Micro Mod Rate Hz" direction="in" datatype="float" rate="audio" default="0.01" />
+
+      <!-- 0 = L/R collapse to Mono Out, 1 = full lane-pair stereo decorrelation. -->
+      <Pin name="Stereo Spread" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <!-- Bank A -->
+      <Pin name="Delay 1 ms" direction="in" datatype="float" rate="audio" default="0.471" />
+      <Pin name="Delay 2 ms" direction="in" datatype="float" rate="audio" default="0.783" />
+      <Pin name="Delay 3 ms" direction="in" datatype="float" rate="audio" default="1.119" />
+      <Pin name="Delay 4 ms" direction="in" datatype="float" rate="audio" default="1.367" />
+
+      <!-- Bank B -->
+      <Pin name="Delay 5 ms" direction="in" datatype="float" rate="audio" default="1.729" />
+      <Pin name="Delay 6 ms" direction="in" datatype="float" rate="audio" default="1.993" />
+      <Pin name="Delay 7 ms" direction="in" datatype="float" rate="audio" default="2.347" />
+      <Pin name="Delay 8 ms" direction="in" datatype="float" rate="audio" default="2.971" />
+
+      <!-- Main wet outputs. Signal Out is mono-safe; L/R are internally decorrelated. -->
+      <Pin name="Signal Out" direction="out" datatype="float" rate="audio" />
+      <Pin name="Left Out" direction="out" datatype="float" rate="audio" />
+      <Pin name="Right Out" direction="out" datatype="float" rate="audio" />
+
+      <!-- Advanced: individual outputs of the four final diffusion lanes. -->
+      <Pin name="Lane Out 1" direction="out" datatype="float" rate="audio" />
+      <Pin name="Lane Out 2" direction="out" datatype="float" rate="audio" />
+      <Pin name="Lane Out 3" direction="out" datatype="float" rate="audio" />
+      <Pin name="Lane Out 4" direction="out" datatype="float" rate="audio" />
+    </Audio>
+  </Plugin>
+</PluginList>
