@@ -58,6 +58,6 @@ include(plugin_helper.cmake)
 
 # here is where you list your modules
 
-add_subdirectory(MatrixDiffuser)
+add_subdirectory(ScatteringDiffuser)
 
 
