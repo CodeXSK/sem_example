@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin
+      id="Pandocrator Orthogonal Matrix Mixer v1"
+      name="Orthogonal Matrix Mixer v1"
+      category="Pandocrator DSP">
+
+    <Audio>
+      <!-- SynthEdit audio/control pins store 1/10 of the voltage shown in the editor. -->
+      <!-- Set Matrix Size to 2, 4, 8 or 16. Other values snap to the nearest supported size. -->
+      <Pin name="Matrix Size" direction="in" datatype="float" rate="audio" default="0.8" />
+
+      <!-- Matrix Type shown in SynthEdit:
+           0 = Identity
+           1 = Hadamard
+           2 = Householder
+           3 = Random Orthogonal -->
+      <Pin name="Matrix Type" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <!-- Seed is an integer >= 1. It controls Random Orthogonal and optional shuffles. -->
+      <Pin name="Seed" direction="in" datatype="float" rate="audio" default="0.1" />
+
+      <!-- 0 = Off, 1 = On. Both preserve matrix orthogonality/energy. -->
+      <Pin name="Shuffle Channels" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Shuffle Polarity" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <Pin name="In 1"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 2"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 3"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 4"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 5"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 6"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 7"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 8"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 9"  direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 10" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 11" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 12" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 13" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 14" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 15" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="In 16" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <Pin name="Out 1"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 2"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 3"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 4"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 5"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 6"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 7"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 8"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 9"  direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 10" direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 11" direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 12" direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 13" direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 14" direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 15" direction="out" datatype="float" rate="audio" />
+      <Pin name="Out 16" direction="out" datatype="float" rate="audio" />
+    </Audio>
+  </Plugin>
+</PluginList>
