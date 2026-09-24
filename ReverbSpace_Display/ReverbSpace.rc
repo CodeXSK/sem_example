@@ -1,0 +1,2 @@
+// Minimal Windows resource file for sem_example's BUILD_GMPI_PLUGIN helper.
+#include <windows.h>
