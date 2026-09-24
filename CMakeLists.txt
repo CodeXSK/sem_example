@@ -58,6 +58,6 @@ include(plugin_helper.cmake)
 
 # here is where you list your modules
 
-add_subdirectory(ReverbSpace_Display)
+add_subdirectory(ReverbSpaceVisualizer)
 
 
