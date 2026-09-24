@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin
+      id="Pandocrator Reverb Space Visualizer v1"
+      name="Reverb Space Visualizer v1"
+      category="Pandocrator GUI"
+      graphicsApi="GmpiGui">
+
+    <GUI>
+      <!-- Main visual controls: all normalized 0..1 -->
+      <Pin name="Size" direction="in" datatype="float" default="0.62" />
+      <Pin name="Diffusion" direction="in" datatype="float" default="0.78" />
+      <Pin name="Decay" direction="in" datatype="float" default="0.64" />
+      <Pin name="Low Damp" direction="in" datatype="float" default="0.35" />
+      <Pin name="High Damp" direction="in" datatype="float" default="0.68" />
+
+      <Pin name="Pre Delay" direction="in" datatype="float" default="0.08" />
+      <Pin name="Early Level" direction="in" datatype="float" default="0.85" />
+      <Pin name="Late Level" direction="in" datatype="float" default="0.72" />
+      <Pin name="Density" direction="in" datatype="float" default="0.80" />
+      <Pin name="Glow" direction="in" datatype="float" default="0.65" />
+      <Pin name="Line Width" direction="in" datatype="float" default="0.35" />
+      <Pin name="Mirror" direction="in" datatype="float" default="0.42" />
+      <Pin name="Brightness" direction="in" datatype="float" default="0.85" />
+      <Pin name="Curve Level" direction="in" datatype="float" default="0.88" />
+
+      <!-- Background RGB -->
+      <Pin name="Background R" direction="in" datatype="float" default="0.025" />
+      <Pin name="Background G" direction="in" datatype="float" default="0.060" />
+      <Pin name="Background B" direction="in" datatype="float" default="0.085" />
+
+      <!-- Main reflection RGB -->
+      <Pin name="Main R" direction="in" datatype="float" default="0.42" />
+      <Pin name="Main G" direction="in" datatype="float" default="0.76" />
+      <Pin name="Main B" direction="in" datatype="float" default="1.00" />
+
+      <!-- Highlight / decay curve RGB -->
+      <Pin name="Highlight R" direction="in" datatype="float" default="1.00" />
+      <Pin name="Highlight G" direction="in" datatype="float" default="0.87" />
+      <Pin name="Highlight B" direction="in" datatype="float" default="0.64" />
+
+      <!-- Requested preferred GUI size in pixels. The graph also scales to the actual panel rectangle. -->
+      <Pin name="Width px" direction="in" datatype="int" default="900" />
+      <Pin name="Height px" direction="in" datatype="int" default="320" />
+    </GUI>
+  </Plugin>
+</PluginList>
