@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin id="Pandocrator Reverb Space Visualizer v6"
+          name="Reverb Space Visualizer v6"
+          category="Pandocrator/Controls"
+          graphicsApi="composited">
+
+    <!-- Private bridge parameters. These are intentionally hidden. -->
+    <Parameters>
+      <Parameter id="0"  name="GUI Size"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="1"  name="GUI Diffusion"    datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="2"  name="GUI Feedback"     datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="3"  name="GUI Decay"        datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="4"  name="GUI Low Damp"     datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="5"  name="GUI High Damp"    datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="6"  name="GUI Pre Delay"    datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="7"  name="GUI Early Level"  datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="8"  name="GUI Late Level"   datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="9"  name="GUI Density"      datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="10" name="GUI Glow"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="11" name="GUI Line Width"   datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="12" name="GUI Mirror"       datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="13" name="GUI Brightness"   datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="14" name="GUI Curve Level"  datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="15" name="GUI Background R" datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="16" name="GUI Background G" datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="17" name="GUI Background B" datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="18" name="GUI Main R"       datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="19" name="GUI Main G"       datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="20" name="GUI Main B"       datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="21" name="GUI Highlight R"  datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="22" name="GUI Highlight G"  datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="23" name="GUI Highlight B"  datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="24" name="GUI Width px"     datatype="int"   private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="25" name="GUI Height px"    datatype="int"   private="true" ignorePatchChange="true" persistant="false" />
+    </Parameters>
+
+    <Audio>
+      <!-- VISIBLE STRUCTURE PINS: ordinary cable-connectable inputs. -->
+      <!-- Float pins are intended for displayed SynthEdit voltages 0..1 V. -->
+      <Pin id="0"  name="Size"          direction="in" datatype="float" rate="audio" default="0.062" />
+      <Pin id="1"  name="Diffusion"     direction="in" datatype="float" rate="audio" default="0.078" />
+      <Pin id="2"  name="Feedback"      direction="in" datatype="float" rate="audio" default="0.055" />
+      <Pin id="3"  name="Decay"         direction="in" datatype="float" rate="audio" default="0.064" />
+      <Pin id="4"  name="Low Damp"      direction="in" datatype="float" rate="audio" default="0.035" />
+      <Pin id="5"  name="High Damp"     direction="in" datatype="float" rate="audio" default="0.068" />
+      <Pin id="6"  name="Pre Delay"     direction="in" datatype="float" rate="audio" default="0.008" />
+      <Pin id="7"  name="Early Level"   direction="in" datatype="float" rate="audio" default="0.085" />
+      <Pin id="8"  name="Late Level"    direction="in" datatype="float" rate="audio" default="0.072" />
+      <Pin id="9"  name="Density"       direction="in" datatype="float" rate="audio" default="0.080" />
+      <Pin id="10" name="Glow"          direction="in" datatype="float" rate="audio" default="0.065" />
+      <Pin id="11" name="Line Width"    direction="in" datatype="float" rate="audio" default="0.035" />
+      <Pin id="12" name="Mirror"        direction="in" datatype="float" rate="audio" default="0.042" />
+      <Pin id="13" name="Brightness"    direction="in" datatype="float" rate="audio" default="0.085" />
+      <Pin id="14" name="Curve Level"   direction="in" datatype="float" rate="audio" default="0.088" />
+      <Pin id="15" name="Background R"  direction="in" datatype="float" rate="audio" default="0.0025" />
+      <Pin id="16" name="Background G"  direction="in" datatype="float" rate="audio" default="0.0060" />
+      <Pin id="17" name="Background B"  direction="in" datatype="float" rate="audio" default="0.0085" />
+      <Pin id="18" name="Main R"        direction="in" datatype="float" rate="audio" default="0.042" />
+      <Pin id="19" name="Main G"        direction="in" datatype="float" rate="audio" default="0.076" />
+      <Pin id="20" name="Main B"        direction="in" datatype="float" rate="audio" default="0.100" />
+      <Pin id="21" name="Highlight R"   direction="in" datatype="float" rate="audio" default="0.100" />
+      <Pin id="22" name="Highlight G"   direction="in" datatype="float" rate="audio" default="0.087" />
+      <Pin id="23" name="Highlight B"   direction="in" datatype="float" rate="audio" default="0.064" />
+      <Pin id="24" name="Width px"      direction="in" datatype="int" default="900" />
+      <Pin id="25" name="Height px"     direction="in" datatype="int" default="320" />
+
+      <!-- PRIVATE DSP -> GUI bridge. Hidden from Structure View. -->
+      <Pin id="26" name="GUI Size"         direction="out" datatype="float" parameterId="0"  private="true" />
+      <Pin id="27" name="GUI Diffusion"    direction="out" datatype="float" parameterId="1"  private="true" />
+      <Pin id="28" name="GUI Feedback"     direction="out" datatype="float" parameterId="2"  private="true" />
+      <Pin id="29" name="GUI Decay"        direction="out" datatype="float" parameterId="3"  private="true" />
+      <Pin id="30" name="GUI Low Damp"     direction="out" datatype="float" parameterId="4"  private="true" />
+      <Pin id="31" name="GUI High Damp"    direction="out" datatype="float" parameterId="5"  private="true" />
+      <Pin id="32" name="GUI Pre Delay"    direction="out" datatype="float" parameterId="6"  private="true" />
+      <Pin id="33" name="GUI Early Level"  direction="out" datatype="float" parameterId="7"  private="true" />
+      <Pin id="34" name="GUI Late Level"   direction="out" datatype="float" parameterId="8"  private="true" />
+      <Pin id="35" name="GUI Density"      direction="out" datatype="float" parameterId="9"  private="true" />
+      <Pin id="36" name="GUI Glow"         direction="out" datatype="float" parameterId="10" private="true" />
+      <Pin id="37" name="GUI Line Width"   direction="out" datatype="float" parameterId="11" private="true" />
+      <Pin id="38" name="GUI Mirror"       direction="out" datatype="float" parameterId="12" private="true" />
+      <Pin id="39" name="GUI Brightness"   direction="out" datatype="float" parameterId="13" private="true" />
+      <Pin id="40" name="GUI Curve Level"  direction="out" datatype="float" parameterId="14" private="true" />
+      <Pin id="41" name="GUI Background R" direction="out" datatype="float" parameterId="15" private="true" />
+      <Pin id="42" name="GUI Background G" direction="out" datatype="float" parameterId="16" private="true" />
+      <Pin id="43" name="GUI Background B" direction="out" datatype="float" parameterId="17" private="true" />
+      <Pin id="44" name="GUI Main R"       direction="out" datatype="float" parameterId="18" private="true" />
+      <Pin id="45" name="GUI Main G"       direction="out" datatype="float" parameterId="19" private="true" />
+      <Pin id="46" name="GUI Main B"       direction="out" datatype="float" parameterId="20" private="true" />
+      <Pin id="47" name="GUI Highlight R"  direction="out" datatype="float" parameterId="21" private="true" />
+      <Pin id="48" name="GUI Highlight G"  direction="out" datatype="float" parameterId="22" private="true" />
+      <Pin id="49" name="GUI Highlight B"  direction="out" datatype="float" parameterId="23" private="true" />
+      <Pin id="50" name="GUI Width px"     direction="out" datatype="int"   parameterId="24" private="true" />
+      <Pin id="51" name="GUI Height px"    direction="out" datatype="int"   parameterId="25" private="true" />
+    </Audio>
+
+    <GUI>
+      <!-- GUI sees the private bridge only. -->
+      <Pin id="0"  name="GUI Size"         direction="in" datatype="float" parameterId="0"  private="true" />
+      <Pin id="1"  name="GUI Diffusion"    direction="in" datatype="float" parameterId="1"  private="true" />
+      <Pin id="2"  name="GUI Feedback"     direction="in" datatype="float" parameterId="2"  private="true" />
+      <Pin id="3"  name="GUI Decay"        direction="in" datatype="float" parameterId="3"  private="true" />
+      <Pin id="4"  name="GUI Low Damp"     direction="in" datatype="float" parameterId="4"  private="true" />
+      <Pin id="5"  name="GUI High Damp"    direction="in" datatype="float" parameterId="5"  private="true" />
+      <Pin id="6"  name="GUI Pre Delay"    direction="in" datatype="float" parameterId="6"  private="true" />
+      <Pin id="7"  name="GUI Early Level"  direction="in" datatype="float" parameterId="7"  private="true" />
+      <Pin id="8"  name="GUI Late Level"   direction="in" datatype="float" parameterId="8"  private="true" />
+      <Pin id="9"  name="GUI Density"      direction="in" datatype="float" parameterId="9"  private="true" />
+      <Pin id="10" name="GUI Glow"         direction="in" datatype="float" parameterId="10" private="true" />
+      <Pin id="11" name="GUI Line Width"   direction="in" datatype="float" parameterId="11" private="true" />
+      <Pin id="12" name="GUI Mirror"       direction="in" datatype="float" parameterId="12" private="true" />
+      <Pin id="13" name="GUI Brightness"   direction="in" datatype="float" parameterId="13" private="true" />
+      <Pin id="14" name="GUI Curve Level"  direction="in" datatype="float" parameterId="14" private="true" />
+      <Pin id="15" name="GUI Background R" direction="in" datatype="float" parameterId="15" private="true" />
+      <Pin id="16" name="GUI Background G" direction="in" datatype="float" parameterId="16" private="true" />
+      <Pin id="17" name="GUI Background B" direction="in" datatype="float" parameterId="17" private="true" />
+      <Pin id="18" name="GUI Main R"       direction="in" datatype="float" parameterId="18" private="true" />
+      <Pin id="19" name="GUI Main G"       direction="in" datatype="float" parameterId="19" private="true" />
+      <Pin id="20" name="GUI Main B"       direction="in" datatype="float" parameterId="20" private="true" />
+      <Pin id="21" name="GUI Highlight R"  direction="in" datatype="float" parameterId="21" private="true" />
+      <Pin id="22" name="GUI Highlight G"  direction="in" datatype="float" parameterId="22" private="true" />
+      <Pin id="23" name="GUI Highlight B"  direction="in" datatype="float" parameterId="23" private="true" />
+      <Pin id="24" name="GUI Width px"     direction="in" datatype="int"   parameterId="24" private="true" />
+      <Pin id="25" name="GUI Height px"    direction="in" datatype="int"   parameterId="25" private="true" />
+    </GUI>
+  </Plugin>
+</PluginList>
