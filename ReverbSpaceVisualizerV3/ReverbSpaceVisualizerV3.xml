@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin id="Pandocrator Reverb Space Visualizer v3"
+          name="Reverb Space Visualizer v3"
+          category="Pandocrator/Visual"
+          graphicsApi="GmpiGui">
+
+    <Parameters>
+      <Parameter id="0"  name="Size"          datatype="float" default="0.062" />
+      <Parameter id="1"  name="Diffusion"     datatype="float" default="0.078" />
+      <Parameter id="2"  name="Decay"         datatype="float" default="0.064" />
+      <Parameter id="3"  name="Low Damp"      datatype="float" default="0.035" />
+      <Parameter id="4"  name="High Damp"     datatype="float" default="0.068" />
+      <Parameter id="5"  name="Pre Delay"     datatype="float" default="0.008" />
+      <Parameter id="6"  name="Early Level"   datatype="float" default="0.085" />
+      <Parameter id="7"  name="Late Level"    datatype="float" default="0.072" />
+      <Parameter id="8"  name="Density"       datatype="float" default="0.080" />
+      <Parameter id="9"  name="Glow"          datatype="float" default="0.065" />
+      <Parameter id="10" name="Line Width"    datatype="float" default="0.035" />
+      <Parameter id="11" name="Mirror"        datatype="float" default="0.042" />
+      <Parameter id="12" name="Brightness"    datatype="float" default="0.085" />
+      <Parameter id="13" name="Curve Level"   datatype="float" default="0.088" />
+
+      <Parameter id="14" name="Background R"  datatype="float" default="0.0025" />
+      <Parameter id="15" name="Background G"  datatype="float" default="0.0060" />
+      <Parameter id="16" name="Background B"  datatype="float" default="0.0085" />
+      <Parameter id="17" name="Main R"        datatype="float" default="0.042" />
+      <Parameter id="18" name="Main G"        datatype="float" default="0.076" />
+      <Parameter id="19" name="Main B"        datatype="float" default="0.100" />
+      <Parameter id="20" name="Highlight R"   datatype="float" default="0.100" />
+      <Parameter id="21" name="Highlight G"   datatype="float" default="0.087" />
+      <Parameter id="22" name="Highlight B"   datatype="float" default="0.064" />
+
+      <Parameter id="23" name="Width px"      datatype="int" default="900" />
+      <Parameter id="24" name="Height px"     datatype="int" default="320" />
+    </Parameters>
+
+    <Audio>
+      <!-- SynthEdit voltage convention: 0..1 V appears internally as 0..0.1. -->
+      <Pin id="0"  name="Size"          direction="in" datatype="float" rate="audio" parameterId="0" />
+      <Pin id="1"  name="Diffusion"     direction="in" datatype="float" rate="audio" parameterId="1" />
+      <Pin id="2"  name="Decay"         direction="in" datatype="float" rate="audio" parameterId="2" />
+      <Pin id="3"  name="Low Damp"      direction="in" datatype="float" rate="audio" parameterId="3" />
+      <Pin id="4"  name="High Damp"     direction="in" datatype="float" rate="audio" parameterId="4" />
+      <Pin id="5"  name="Pre Delay"     direction="in" datatype="float" rate="audio" parameterId="5" />
+      <Pin id="6"  name="Early Level"   direction="in" datatype="float" rate="audio" parameterId="6" />
+      <Pin id="7"  name="Late Level"    direction="in" datatype="float" rate="audio" parameterId="7" />
+      <Pin id="8"  name="Density"       direction="in" datatype="float" rate="audio" parameterId="8" />
+      <Pin id="9"  name="Glow"          direction="in" datatype="float" rate="audio" parameterId="9" />
+      <Pin id="10" name="Line Width"    direction="in" datatype="float" rate="audio" parameterId="10" />
+      <Pin id="11" name="Mirror"        direction="in" datatype="float" rate="audio" parameterId="11" />
+      <Pin id="12" name="Brightness"    direction="in" datatype="float" rate="audio" parameterId="12" />
+      <Pin id="13" name="Curve Level"   direction="in" datatype="float" rate="audio" parameterId="13" />
+      <Pin id="14" name="Background R"  direction="in" datatype="float" rate="audio" parameterId="14" />
+      <Pin id="15" name="Background G"  direction="in" datatype="float" rate="audio" parameterId="15" />
+      <Pin id="16" name="Background B"  direction="in" datatype="float" rate="audio" parameterId="16" />
+      <Pin id="17" name="Main R"        direction="in" datatype="float" rate="audio" parameterId="17" />
+      <Pin id="18" name="Main G"        direction="in" datatype="float" rate="audio" parameterId="18" />
+      <Pin id="19" name="Main B"        direction="in" datatype="float" rate="audio" parameterId="19" />
+      <Pin id="20" name="Highlight R"   direction="in" datatype="float" rate="audio" parameterId="20" />
+      <Pin id="21" name="Highlight G"   direction="in" datatype="float" rate="audio" parameterId="21" />
+      <Pin id="22" name="Highlight B"   direction="in" datatype="float" rate="audio" parameterId="22" />
+      <Pin id="23" name="Width px"      direction="in" datatype="int" parameterId="23" />
+      <Pin id="24" name="Height px"     direction="in" datatype="int" parameterId="24" />
+    </Audio>
+
+    <GUI>
+      <Pin id="0"  name="Size"          direction="in" datatype="float" parameterId="0" />
+      <Pin id="1"  name="Diffusion"     direction="in" datatype="float" parameterId="1" />
+      <Pin id="2"  name="Decay"         direction="in" datatype="float" parameterId="2" />
+      <Pin id="3"  name="Low Damp"      direction="in" datatype="float" parameterId="3" />
+      <Pin id="4"  name="High Damp"     direction="in" datatype="float" parameterId="4" />
+      <Pin id="5"  name="Pre Delay"     direction="in" datatype="float" parameterId="5" />
+      <Pin id="6"  name="Early Level"   direction="in" datatype="float" parameterId="6" />
+      <Pin id="7"  name="Late Level"    direction="in" datatype="float" parameterId="7" />
+      <Pin id="8"  name="Density"       direction="in" datatype="float" parameterId="8" />
+      <Pin id="9"  name="Glow"          direction="in" datatype="float" parameterId="9" />
+      <Pin id="10" name="Line Width"    direction="in" datatype="float" parameterId="10" />
+      <Pin id="11" name="Mirror"        direction="in" datatype="float" parameterId="11" />
+      <Pin id="12" name="Brightness"    direction="in" datatype="float" parameterId="12" />
+      <Pin id="13" name="Curve Level"   direction="in" datatype="float" parameterId="13" />
+      <Pin id="14" name="Background R"  direction="in" datatype="float" parameterId="14" />
+      <Pin id="15" name="Background G"  direction="in" datatype="float" parameterId="15" />
+      <Pin id="16" name="Background B"  direction="in" datatype="float" parameterId="16" />
+      <Pin id="17" name="Main R"        direction="in" datatype="float" parameterId="17" />
+      <Pin id="18" name="Main G"        direction="in" datatype="float" parameterId="18" />
+      <Pin id="19" name="Main B"        direction="in" datatype="float" parameterId="19" />
+      <Pin id="20" name="Highlight R"   direction="in" datatype="float" parameterId="20" />
+      <Pin id="21" name="Highlight G"   direction="in" datatype="float" parameterId="21" />
+      <Pin id="22" name="Highlight B"   direction="in" datatype="float" parameterId="22" />
+      <Pin id="23" name="Width px"      direction="in" datatype="int" parameterId="23" />
+      <Pin id="24" name="Height px"     direction="in" datatype="int" parameterId="24" />
+    </GUI>
+  </Plugin>
+</PluginList>
