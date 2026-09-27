@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin
+      id="Pandocrator Transient Separator v1"
+      name="Transient Separator v1"
+      category="Pandocrator DSP">
+
+    <Audio>
+      <Pin name="Input L" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Input R" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- SynthEdit displays these audio/control pins at 10x the XML/raw value,
+           matching the supplied working FDN module convention. -->
+      <Pin name="Attack ms" direction="in" datatype="float" rate="audio" default="1.2" />
+      <Pin name="Hold ms" direction="in" datatype="float" rate="audio" default="1.2" />
+      <Pin name="Release ms" direction="in" datatype="float" rate="audio" default="10.0" />
+
+      <!-- 0..1 displayed range. Higher Sensitivity detects weaker onsets.
+           Higher Separation gives a harder, cleaner transient/sustain split. -->
+      <Pin name="Sensitivity" direction="in" datatype="float" rate="audio" default="0.06" />
+      <Pin name="Separation" direction="in" datatype="float" rate="audio" default="0.07" />
+
+      <Pin name="Transient L" direction="out" datatype="float" rate="audio" />
+      <Pin name="Transient R" direction="out" datatype="float" rate="audio" />
+      <Pin name="Sustain L" direction="out" datatype="float" rate="audio" />
+      <Pin name="Sustain R" direction="out" datatype="float" rate="audio" />
+    </Audio>
+  </Plugin>
+</PluginList>
