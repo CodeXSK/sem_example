@@ -241,7 +241,30 @@ public:
             previousToneSample_ = toneLowPass2_;
             previousSubHighPass_ = filteredSub;
 
-            const float safeSub = sanitizeAudioOutput(filteredSub);
+            // Post-filter de-click / tail cleaner.  This is intentionally
+            // after the tone LPFs and sub DC blocker, so no filter residue can
+            // escape after the note has ended. It follows the already-smoothed
+            // main gate, therefore there is no abrupt truncation.
+            const float outputFadeTarget = gate_;
+            outputFade_ = outputFadeTarget
+                + outputFadeCoefficient_ * (outputFade_ - outputFadeTarget);
+
+            float cleanedSub = filteredSub * outputFade_;
+
+            // Once both envelopes are essentially silent, clear the output
+            // filter memories. At this point the signal is far below audibility,
+            // so the reset cannot click, and it prevents a microscopic DC/LPF
+            // tail from being boosted by a following high-gain distortion stage.
+            if (!gateOpen_ && gate_ < 0.00001f && outputFade_ < 0.00001f)
+            {
+                toneLowPass1_ = 0.0f;
+                toneLowPass2_ = 0.0f;
+                previousToneSample_ = 0.0f;
+                previousSubHighPass_ = 0.0f;
+                cleanedSub = 0.0f;
+            }
+
+            const float safeSub = sanitizeAudioOutput(cleanedSub);
             const float safeMix = sanitizeAudioOutput(
                 input * dryLevel + safeSub * subLevel);
 
@@ -318,6 +341,13 @@ private:
         gateAttackCoefficient_ = timeCoefficient(0.008f, sampleRate);
         gateReleaseCoefficient_ = timeCoefficient(0.120f, sampleRate);
 
+        // Final post-filter de-click envelope. The main gate above feeds the
+        // tone filters, but those filters (and especially the DC blocker) can
+        // still emit a tiny residual tail after the source has stopped. Heavy
+        // downstream distortion can magnify that otherwise inaudible residue.
+        // This extra stage fades the *actual output* to true silence smoothly.
+        outputFadeCoefficient_ = timeCoefficient(0.040f, sampleRate);
+
         // Reject impossible extra edges above roughly 4 kHz.
         minimumEdgeDistanceSamples_ =
             (std::max)(4, static_cast<int>(sampleRate / 4000.0f));
@@ -345,6 +375,7 @@ private:
         toneLowPass2_ = 0.0f;
         previousToneSample_ = 0.0f;
         previousSubHighPass_ = 0.0f;
+        outputFade_ = 0.0f;
     }
 
     void recoverInvalidStateIfNeeded()
@@ -360,7 +391,8 @@ private:
             && std::isfinite(toneLowPass1_)
             && std::isfinite(toneLowPass2_)
             && std::isfinite(previousToneSample_)
-            && std::isfinite(previousSubHighPass_);
+            && std::isfinite(previousSubHighPass_)
+            && std::isfinite(outputFade_);
 
         if (!valid)
             resetDynamicState();
@@ -379,6 +411,7 @@ private:
         toneLowPass2_ = zapDenormal(toneLowPass2_);
         previousToneSample_ = zapDenormal(previousToneSample_);
         previousSubHighPass_ = zapDenormal(previousSubHighPass_);
+        outputFade_ = zapDenormal(outputFade_);
     }
 
     // Inputs.
@@ -411,6 +444,7 @@ private:
     float toneLowPass2_ = 0.0f;
     float previousToneSample_ = 0.0f;
     float previousSubHighPass_ = 0.0f;
+    float outputFade_ = 0.0f;
 
     // Coefficients.
     float detectorAlpha_ = 0.01f;
@@ -422,6 +456,7 @@ private:
     float envelopeReleaseCoefficient_ = 0.999f;
     float gateAttackCoefficient_ = 0.99f;
     float gateReleaseCoefficient_ = 0.999f;
+    float outputFadeCoefficient_ = 0.999f;
     int minimumEdgeDistanceSamples_ = 4;
     int detectorResetSamples_ = 12000;
 
