@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin
+      id="Pandocrator Multiband Crossover v1"
+      name="Multiband Crossover v1"
+      category="Pandocrator DSP">
+
+    <Audio>
+      <Pin name="Input L" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Input R" direction="in" datatype="float" rate="audio" default="0.0" />
+
+      <!-- The supplied working SEM uses SynthEdit's x10 display convention
+           for float control/audio pins. Raw defaults below therefore display
+           as 4 bands, 24 dB/oct, 200 Hz, 2 kHz and 8 kHz. -->
+      <Pin name="Bands 2-4" direction="in" datatype="float" rate="audio" default="0.4" />
+      <Pin name="Slope dB/oct 24-48" direction="in" datatype="float" rate="audio" default="2.4" />
+      <Pin name="Crossover 1 Hz" direction="in" datatype="float" rate="audio" default="20.0" />
+      <Pin name="Crossover 2 Hz" direction="in" datatype="float" rate="audio" default="200.0" />
+      <Pin name="Crossover 3 Hz" direction="in" datatype="float" rate="audio" default="800.0" />
+
+      <Pin name="Band 1 L" direction="out" datatype="float" rate="audio" />
+      <Pin name="Band 1 R" direction="out" datatype="float" rate="audio" />
+      <Pin name="Band 2 L" direction="out" datatype="float" rate="audio" />
+      <Pin name="Band 2 R" direction="out" datatype="float" rate="audio" />
+      <Pin name="Band 3 L" direction="out" datatype="float" rate="audio" />
+      <Pin name="Band 3 R" direction="out" datatype="float" rate="audio" />
+      <Pin name="Band 4 L" direction="out" datatype="float" rate="audio" />
+      <Pin name="Band 4 R" direction="out" datatype="float" rate="audio" />
+    </Audio>
+  </Plugin>
+</PluginList>
