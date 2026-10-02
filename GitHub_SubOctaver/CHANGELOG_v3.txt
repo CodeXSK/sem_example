@@ -1,0 +1,7 @@
+Sub Octaver v3 - Tail Cleaner / De-click
+
+- Same module ID and same pins/defaults as v2.
+- Added a smooth post-filter output fade after the tone LPFs and sub DC blocker.
+- Clears tone/DC-blocker states only after both gate envelopes are effectively silent.
+- Prevents microscopic residual filter/DC tails from becoming audible when followed by high-gain distortion.
+- Keeps the existing 8 ms gate attack / 120 ms release and tracking behavior.
