@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin id="Pandocrator Impulse Response Scope v1" name="Impulse Response Scope v1" category="Analysis" graphicsApi="GmpiGui">
+    <Parameters>
+      <Parameter id="0"  name="Capture Data"       datatype="blob"  private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="1"  name="GUI Time Window"    datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="2"  name="GUI Pre Trigger"    datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="3"  name="GUI Threshold"      datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="4"  name="GUI Vertical Gain"  datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="5"  name="GUI Freeze"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="6"  name="GUI BG A"           datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="7"  name="GUI BG R"           datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="8"  name="GUI BG G"           datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="9"  name="GUI BG B"           datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="10" name="GUI Wave A"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="11" name="GUI Wave R"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="12" name="GUI Wave G"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="13" name="GUI Wave B"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="14" name="GUI Grid A"         datatype="float" private="true" ignorePatchChange="true" persistant="false" />
+      <Parameter id="15" name="GUI Width px"       datatype="int"   private="true" ignorePatchChange="true" persistant="true" />
+      <Parameter id="16" name="GUI Height px"      datatype="int"   private="true" ignorePatchChange="true" persistant="true" />
+    </Parameters>
+
+    <Audio>
+      <!-- Main signal. Connect the reverb/output you want to inspect here. -->
+      <Pin id="0"  name="Signal"          direction="in" datatype="float" rate="audio" />
+
+      <!-- Displayed SynthEdit voltages 0..1 V. -->
+      <Pin id="1"  name="Time Window"     direction="in" datatype="float" rate="audio" default="0.077" />
+      <Pin id="2"  name="Pre Trigger"     direction="in" datatype="float" rate="audio" default="0.020" />
+      <Pin id="3"  name="Trigger Threshold" direction="in" datatype="float" rate="audio" default="0.055" />
+      <Pin id="4"  name="Vertical Gain"   direction="in" datatype="float" rate="audio" default="0.025" />
+      <Pin id="5"  name="Freeze"          direction="in" datatype="float" rate="audio" default="0.000" />
+      <Pin id="6"  name="Force Trigger"   direction="in" datatype="float" rate="audio" default="0.000" />
+
+      <!-- ARGB background. BG A=0 gives a fully transparent background. -->
+      <Pin id="7"  name="Background A"    direction="in" datatype="float" rate="audio" default="0.090" />
+      <Pin id="8"  name="Background R"    direction="in" datatype="float" rate="audio" default="0.003" />
+      <Pin id="9"  name="Background G"    direction="in" datatype="float" rate="audio" default="0.004" />
+      <Pin id="10" name="Background B"    direction="in" datatype="float" rate="audio" default="0.006" />
+
+      <!-- Waveform ARGB. -->
+      <Pin id="11" name="Waveform A"      direction="in" datatype="float" rate="audio" default="0.100" />
+      <Pin id="12" name="Waveform R"      direction="in" datatype="float" rate="audio" default="0.020" />
+      <Pin id="13" name="Waveform G"      direction="in" datatype="float" rate="audio" default="0.085" />
+      <Pin id="14" name="Waveform B"      direction="in" datatype="float" rate="audio" default="0.100" />
+      <Pin id="15" name="Grid A"          direction="in" datatype="float" rate="audio" default="0.025" />
+
+      <Pin id="16" name="Width px"        direction="in" datatype="int" default="1200" />
+      <Pin id="17" name="Height px"       direction="in" datatype="int" default="360" />
+
+      <!-- Private DSP -> GUI bridge. -->
+      <Pin id="18" name="Capture Data"      direction="out" datatype="blob"  parameterId="0"  private="true" />
+      <Pin id="19" name="GUI Time Window"   direction="out" datatype="float" parameterId="1"  private="true" />
+      <Pin id="20" name="GUI Pre Trigger"   direction="out" datatype="float" parameterId="2"  private="true" />
+      <Pin id="21" name="GUI Threshold"     direction="out" datatype="float" parameterId="3"  private="true" />
+      <Pin id="22" name="GUI Vertical Gain" direction="out" datatype="float" parameterId="4"  private="true" />
+      <Pin id="23" name="GUI Freeze"        direction="out" datatype="float" parameterId="5"  private="true" />
+      <Pin id="24" name="GUI BG A"          direction="out" datatype="float" parameterId="6"  private="true" />
+      <Pin id="25" name="GUI BG R"          direction="out" datatype="float" parameterId="7"  private="true" />
+      <Pin id="26" name="GUI BG G"          direction="out" datatype="float" parameterId="8"  private="true" />
+      <Pin id="27" name="GUI BG B"          direction="out" datatype="float" parameterId="9"  private="true" />
+      <Pin id="28" name="GUI Wave A"        direction="out" datatype="float" parameterId="10" private="true" />
+      <Pin id="29" name="GUI Wave R"        direction="out" datatype="float" parameterId="11" private="true" />
+      <Pin id="30" name="GUI Wave G"        direction="out" datatype="float" parameterId="12" private="true" />
+      <Pin id="31" name="GUI Wave B"        direction="out" datatype="float" parameterId="13" private="true" />
+      <Pin id="32" name="GUI Grid A"        direction="out" datatype="float" parameterId="14" private="true" />
+      <Pin id="33" name="GUI Width px"      direction="out" datatype="int"   parameterId="15" private="true" />
+      <Pin id="34" name="GUI Height px"     direction="out" datatype="int"   parameterId="16" private="true" />
+    </Audio>
+
+    <GUI>
+      <Pin id="0"  name="Capture Data"      direction="in" datatype="blob"  parameterId="0"  private="true" />
+      <Pin id="1"  name="GUI Time Window"   direction="in" datatype="float" parameterId="1"  private="true" />
+      <Pin id="2"  name="GUI Pre Trigger"   direction="in" datatype="float" parameterId="2"  private="true" />
+      <Pin id="3"  name="GUI Threshold"     direction="in" datatype="float" parameterId="3"  private="true" />
+      <Pin id="4"  name="GUI Vertical Gain" direction="in" datatype="float" parameterId="4"  private="true" />
+      <Pin id="5"  name="GUI Freeze"        direction="in" datatype="float" parameterId="5"  private="true" />
+      <Pin id="6"  name="GUI BG A"          direction="in" datatype="float" parameterId="6"  private="true" />
+      <Pin id="7"  name="GUI BG R"          direction="in" datatype="float" parameterId="7"  private="true" />
+      <Pin id="8"  name="GUI BG G"          direction="in" datatype="float" parameterId="8"  private="true" />
+      <Pin id="9"  name="GUI BG B"          direction="in" datatype="float" parameterId="9"  private="true" />
+      <Pin id="10" name="GUI Wave A"        direction="in" datatype="float" parameterId="10" private="true" />
+      <Pin id="11" name="GUI Wave R"        direction="in" datatype="float" parameterId="11" private="true" />
+      <Pin id="12" name="GUI Wave G"        direction="in" datatype="float" parameterId="12" private="true" />
+      <Pin id="13" name="GUI Wave B"        direction="in" datatype="float" parameterId="13" private="true" />
+      <Pin id="14" name="GUI Grid A"        direction="in" datatype="float" parameterId="14" private="true" />
+      <Pin id="15" name="GUI Width px"      direction="in" datatype="int"   parameterId="15" private="true" default="1200" />
+      <Pin id="16" name="GUI Height px"     direction="in" datatype="int"   parameterId="16" private="true" default="360" />
+    </GUI>
+  </Plugin>
+</PluginList>
