@@ -1,0 +1,7 @@
+Run a standalone DSP behavior test (no SynthEdit SDK necessary):
+
+g++ -std=c++17 -O2 -Wall -Wextra -Werror tests/test_dsp.cpp -o test_dsp
+./test_dsp
+
+This exercises the SAME AdaptiveDCBlockerDSP.h used by the SynthEdit SEM wrapper.
+Note: this does not test SDK3 ABI, SynthEdit module discovery, or host pin behavior.
