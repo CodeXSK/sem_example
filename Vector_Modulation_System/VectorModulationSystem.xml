@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='utf-8'?>
+<PluginList>
+  <Plugin id="Pandocrator Vector Modulation System 3" name="Vector Modulation System 3" category="Pandocrator DSP" graphicsApi="GmpiGui" voiceMonitorIgnore="true">
+    <Parameters>
+      <Parameter id="0" datatype="float" default="0" persistant="false" ignorePatchChange="true" direction="out" private="true" />
+    </Parameters>
+    <Audio>
+      <Pin id="0" name="Modulation In" datatype="float" direction="in" default="0" rate="audio" />
+      <Pin id="1" name="Minimum Voltage" datatype="float" direction="in" default="0" />
+      <Pin id="2" name="Maximum Voltage" datatype="float" direction="in" default="20" />
+      <Pin id="3" name="Refresh Rate Hz" datatype="float" direction="in" default="20" />
+      <Pin id="4" name="Smoothing ms" datatype="float" direction="in" default="0" />
+      <Pin id="5" name="Deadband" datatype="float" direction="in" default="0.001" />
+      <Pin id="6" name="Internal Modulation" datatype="float" direction="out" parameterId="0" private="true" />
+      <Pin id="7" name="Pass Through" direction="out" datatype="float" rate="audio" />
+      <Pin id="8" name="Held 0-10 V" direction="out" datatype="float" rate="audio" />
+    </Audio>
+    <GUI>
+      <Pin id="0" name="Normalized Modulation" datatype="float" direction="in" default="0" parameterId="0" private="true" />
+      <Pin id="1" name="Base Position" datatype="float" direction="in" default="0.5" />
+      <Pin id="2" name="Depth" datatype="float" direction="in" default="0.25" />
+      <Pin id="3" name="Offset Mode" datatype="bool" direction="in" default="0" />
+      <Pin id="4" name="Enable" datatype="bool" direction="in" default="1" />
+      <Pin id="5" name="Size Scale" datatype="float" direction="in" default="1" />
+      <Pin id="6" name="Ring Radius" datatype="float" direction="in" default="0.86" />
+      <Pin id="7" name="Ring Thickness" datatype="float" direction="in" default="0.06" />
+      <Pin id="8" name="Knob Radius Ratio" datatype="float" direction="in" default="0.73" />
+      <Pin id="9" name="Start Angle" datatype="float" direction="in" default="135" />
+      <Pin id="10" name="End Angle" datatype="float" direction="in" default="405" />
+      <Pin id="11" name="Glow" datatype="float" direction="in" default="0.25" />
+      <Pin id="12" name="Show Knob" datatype="bool" direction="in" default="1" />
+      <Pin id="13" name="Show Range" datatype="bool" direction="in" default="1" />
+      <Pin id="14" name="Show Track" datatype="bool" direction="in" default="1" />
+      <Pin id="15" name="Show Ticks" datatype="bool" direction="in" default="1" />
+      <Pin id="16" name="Show Dot" datatype="bool" direction="in" default="1" />
+      <Pin id="17" name="Show Value" datatype="bool" direction="in" default="1" />
+      <Pin id="18" name="Interactive" datatype="bool" direction="in" default="1" />
+      <Pin id="19" name="Drag Pixels" datatype="float" direction="in" default="150" />
+      <Pin id="20" name="Active Color" datatype="string" direction="in" default="FF42E8AD" />
+      <Pin id="21" name="Range Color" datatype="string" direction="in" default="FF1B5649" />
+      <Pin id="22" name="Track Color" datatype="string" direction="in" default="FF3B434E" />
+      <Pin id="23" name="Face Top Color" datatype="string" direction="in" default="FF59616B" />
+      <Pin id="24" name="Face Bottom Color" datatype="string" direction="in" default="FF20252C" />
+      <Pin id="25" name="Needle Color" datatype="string" direction="in" default="FFEEEEEE" />
+      <Pin id="26" name="Background Color" datatype="string" direction="in" default="00000000" />
+      <Pin id="27" name="Animation Position Out" datatype="float" direction="out" />
+      <Pin id="28" name="Base Position Out" datatype="float" direction="out" />
+      <Pin id="29" name="Mouse Down" datatype="bool" direction="out" />
+    </GUI>
+  </Plugin>
+  <Plugin id="Pandocrator Vector Modulation Display 3" name="Vector Modulation Display 3" category="Pandocrator DSP" graphicsApi="GmpiGui">
+    <GUI>
+      <Pin id="0" name="Position 0-10" datatype="float" direction="in" default="0" />
+      <Pin id="1" name="Base Position" datatype="float" direction="in" default="0.5" />
+      <Pin id="2" name="Depth" datatype="float" direction="in" default="0.25" />
+      <Pin id="3" name="Offset Mode" datatype="bool" direction="in" default="0" />
+      <Pin id="4" name="Enable" datatype="bool" direction="in" default="1" />
+      <Pin id="5" name="Size Scale" datatype="float" direction="in" default="1" />
+      <Pin id="6" name="Ring Radius" datatype="float" direction="in" default="0.86" />
+      <Pin id="7" name="Ring Thickness" datatype="float" direction="in" default="0.06" />
+      <Pin id="8" name="Knob Radius Ratio" datatype="float" direction="in" default="0.73" />
+      <Pin id="9" name="Start Angle" datatype="float" direction="in" default="135" />
+      <Pin id="10" name="End Angle" datatype="float" direction="in" default="405" />
+      <Pin id="11" name="Glow" datatype="float" direction="in" default="0.25" />
+      <Pin id="12" name="Show Knob" datatype="bool" direction="in" default="1" />
+      <Pin id="13" name="Show Range" datatype="bool" direction="in" default="1" />
+      <Pin id="14" name="Show Track" datatype="bool" direction="in" default="1" />
+      <Pin id="15" name="Show Ticks" datatype="bool" direction="in" default="1" />
+      <Pin id="16" name="Show Dot" datatype="bool" direction="in" default="1" />
+      <Pin id="17" name="Show Value" datatype="bool" direction="in" default="1" />
+      <Pin id="18" name="Interactive" datatype="bool" direction="in" default="1" />
+      <Pin id="19" name="Drag Pixels" datatype="float" direction="in" default="150" />
+      <Pin id="20" name="Active Color" datatype="string" direction="in" default="FF42E8AD" />
+      <Pin id="21" name="Range Color" datatype="string" direction="in" default="FF1B5649" />
+      <Pin id="22" name="Track Color" datatype="string" direction="in" default="FF3B434E" />
+      <Pin id="23" name="Face Top Color" datatype="string" direction="in" default="FF59616B" />
+      <Pin id="24" name="Face Bottom Color" datatype="string" direction="in" default="FF20252C" />
+      <Pin id="25" name="Needle Color" datatype="string" direction="in" default="FFEEEEEE" />
+      <Pin id="26" name="Background Color" datatype="string" direction="in" default="00000000" />
+      <Pin id="27" name="Animation Position Out" datatype="float" direction="out" />
+      <Pin id="28" name="Base Position Out" datatype="float" direction="out" />
+      <Pin id="29" name="Mouse Down" datatype="bool" direction="out" />
+    </GUI>
+  </Plugin>
+</PluginList>
