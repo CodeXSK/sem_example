@@ -58,7 +58,7 @@ include(plugin_helper.cmake)
 
 # here is where you list your modules
 
-add_subdirectory(Modulation_Indicator_Bridge)
+add_subdirectory(Modulation_Rate_Limiter)
 
 
 
