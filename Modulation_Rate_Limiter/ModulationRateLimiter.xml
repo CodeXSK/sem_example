@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<PluginList>
+  <Plugin id="Pandocrator Modulation Rate Limiter 1.3" name="Modulation Rate Limiter 1.3" category="Pandocrator DSP">
+    <Audio>
+      <Pin name="Modulation In" direction="in" datatype="float" rate="audio" default="0.0" />
+      <Pin name="Pass Through" direction="out" datatype="float" rate="audio" />
+      <Pin name="Scaled 0-10 V" direction="out" datatype="float" rate="audio" />
+      <Pin name="Held 30 Hz 0-10 V" direction="out" datatype="float" rate="audio" />
+      <Pin name="Reference 5 V" direction="out" datatype="float" rate="audio" />
+    </Audio>
+  </Plugin>
+</PluginList>
