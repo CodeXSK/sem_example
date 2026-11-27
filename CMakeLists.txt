@@ -58,11 +58,7 @@ include(plugin_helper.cmake)
 
 # here is where you list your modules
 
-add_subdirectory(SubOctaver_v8_Tunable)
-add_subdirectory(StrongestHarmonicEQ)
-add_subdirectory(PhaseRotatorZeroLatency)
-add_subdirectory(PhaseRotatorFIR90)
-add_subdirectory(PhaseRotatorFIR)
+add_subdirectory(Modulation_Indicator_Bridge)
 
 
 
