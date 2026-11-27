@@ -1,0 +1,10 @@
+SubOctaver v5 - Tunable Release / Tail Cleaner
+
+Added four user-adjustable anti-tail timing pins (milliseconds):
+- Envelope Release ms: 5..500, default 45
+- Gate Release ms: 2..300, default 35
+- Tail Fade ms: 0.5..100, default 5
+- Zero-Cross Timeout ms: 2..200, default 30
+
+The four pins are appended after the original 8 pins to preserve existing pin indices.
+The v4 zero-cross hard-clean shutdown remains active.

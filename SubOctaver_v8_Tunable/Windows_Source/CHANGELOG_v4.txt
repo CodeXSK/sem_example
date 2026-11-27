@@ -1,0 +1,9 @@
+SubOctaver v4 - Hard Clean Release
+
+- Envelope release shortened from 90 ms to 45 ms.
+- Main gate release shortened from 120 ms to 35 ms.
+- Final post-filter fade shortened from 40 ms to 5 ms.
+- Added zero-cross-safe final shutdown on the actual filtered Sub Out.
+- Added 30 ms maximum shutdown timeout so residual filter tails cannot hang.
+- On final shutdown, tone LPF and DC-blocker states are cleared and output becomes exact digital zero.
+- Pin order, module ID and external controls are unchanged for drop-in replacement.

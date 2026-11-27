@@ -1,0 +1,33 @@
+SubOctaver v2 - Release Safe
+============================
+
+Compatibility
+-------------
+- Same SynthEdit module ID: "Pandocrator Sub Octaver"
+- Same pin order, names, defaults and XML metadata as v1.
+- Intended as a drop-in replacement for the original module.
+
+Hardening / fixes
+-----------------
+1. NaN and Infinity guards on audio and control inputs.
+2. Pathological audio levels are clamped far outside normal SynthEdit range,
+   preventing overflow/NaN propagation while leaving normal audio untouched.
+3. Internal state automatically recovers at a block boundary if a non-finite
+   value is ever detected.
+4. Denormal/subnormal state cleanup to avoid possible CPU spikes during long
+   decays or silence.
+5. Gate hysteresis added: separate open and close thresholds prevent chatter.
+6. Gate attack/release changed from 2/70 ms to 8/120 ms to reduce sub clicks.
+7. Sub polarity is reset only after the smoothed gate is effectively silent.
+8. Saturating edge counter retained so it cannot integer-overflow in long runs.
+9. Sample rate is validated and clamped to a defensive 1 kHz..768 kHz range.
+10. Filter cutoffs are limited to a meaningful fraction of sample rate.
+11. Coefficients are recalculated only when Tone, Tracking, Sensitivity or
+    sample rate actually change.
+12. /fp:fast removed from Windows build so finite-value checks remain reliable.
+13. /GS- removed; MSVC's normal stack-security defaults remain enabled.
+
+Sound / controls
+----------------
+The divide-by-two algorithm, pin layout and default control values are unchanged.
+Gate behavior is deliberately smoother and less prone to small release clicks.

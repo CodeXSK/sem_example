@@ -1,0 +1,8 @@
+Sub Octaver -1 Tunable v7
+- New, separate SynthEdit module ID to protect compatibility with the original module.
+- Adds four live tunable anti-tail controls in milliseconds.
+- Envelope Release: 5..500 ms.
+- Gate Release: 2..300 ms.
+- Tail Fade: 0.5..100 ms.
+- Zero-Cross Timeout: 2..200 ms.
+- Keeps zero-cross hard-clean shutdown and exact digital-zero state clearing.
