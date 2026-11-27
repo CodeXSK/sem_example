@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PluginList>
+ <Plugin id="Pandocrator Modulation Indicator Bridge Diagnostic 1.1" name="Modulation Indicator Bridge 1.1 Diagnostic" voiceMonitorIgnore="true" category="Pandocrator DSP">
+  <Parameters><Parameter id="0" datatype="float" direction="out" name="Display" private="true" persistant="false" ignorePatchChange="true" default="0" /></Parameters>
+  <Audio>
+   <Pin id="0" name="Modulation In" direction="in" datatype="float" rate="audio" default="0" />
+   <Pin id="1" name="Minimum Voltage" direction="in" datatype="float" default="0" />
+   <Pin id="2" name="Maximum Voltage" direction="in" datatype="float" default="20" />
+   <Pin id="3" name="Refresh Rate Hz" direction="in" datatype="float" default="30" />
+   <Pin id="4" name="Smoothing ms" direction="in" datatype="float" default="0" />
+   <Pin id="5" name="Deadband" direction="in" datatype="float" default="0.001" />
+   <Pin id="6" name="Enable" direction="in" datatype="bool" default="1" />
+   <Pin id="7" name="Offset Mode" direction="in" datatype="bool" default="0" />
+   <Pin id="8" name="Base Position" direction="in" datatype="float" default="0.5" />
+   <Pin id="9" name="Depth" direction="in" datatype="float" default="0.5" />
+   <Pin id="10" name="Internal Display Value" direction="out" datatype="float" parameterId="0" parameterField="Value" private="true" />
+   <Pin id="11" name="Output Minimum" direction="in" datatype="float" default="0" />
+   <Pin id="12" name="Output Maximum" direction="in" datatype="float" default="10" />
+   <Pin id="13" name="DSP Float Out (Debug)" direction="out" datatype="float" />
+  </Audio>
+  <GUI>
+   <Pin id="0" name="Internal Display Value" direction="in" datatype="float" parameterId="0" parameterField="Value" private="true" />
+   <Pin id="1" name="Animation Position Out" direction="out" datatype="float" />
+  </GUI>
+ </Plugin>
+</PluginList>
